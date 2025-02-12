@@ -47,6 +47,7 @@ const tableQueries = {
     CREATE TABLE pl_words (
       id SERIAL PRIMARY KEY,
       word TEXT NOT NULL,
+      word_forms TEXT,
       phrase TEXT,
       ru TEXT,
       uk TEXT,
@@ -131,11 +132,16 @@ function createTable(tableName) {
 async function loadDictionary() {
 
   const dictionaryPath = path.join(__dirname, '../../data/pl/', `${process.env.DICT_NAME}.txt`)
-  const words = fs.readFileSync(dictionaryPath, 'utf8').split('\n').map(word => word.trim())
+  const lines = fs.readFileSync(dictionaryPath, 'utf8').split('\n').map(word => word.trim())
 
-  for (const word of words) {
-    if (word) {
-      await pool.query('INSERT INTO pl_words (word) VALUES ($1)', [word])
+  for (const line of lines) {
+    if (line.includes(',') && line[1] !== ' ' && line[1] !== '.') {
+      const [word, ...wordForms] = line.split(',').map(word => word.trim());
+      const wordFormsString = wordForms.join(', ');
+
+      if (word) {
+        await pool.query('INSERT INTO pl_words (word, word_forms) VALUES ($1, $2)', [word, wordFormsString]);
+      }
     }
   }
 }
@@ -147,8 +153,7 @@ async function addDataToWords() {
   for (const entry of data) {
     const { subject, words, ru, uk, en, examples } = entry
 
-    // Step 1: Check and insert subject
-    let subjectId
+    let subjectId, exampleId
     const subjectRes = await pool.query('SELECT id FROM pl_subjects WHERE subject = $1', [subject])
     if (subjectRes.rows.length > 0) {
       subjectId = subjectRes.rows[0].id
@@ -157,8 +162,6 @@ async function addDataToWords() {
       subjectId = insertSubjectRes.rows[0].id
     }
 
-    // Step 2: Check and insert example
-    let exampleId
     const exampleRes = await pool.query('SELECT id FROM pl_examples WHERE example = $1', [examples])
     if (exampleRes.rows.length > 0) {
       exampleId = exampleRes.rows[0].id
@@ -167,7 +170,6 @@ async function addDataToWords() {
       exampleId = insertExampleRes.rows[0].id
     }
 
-    // Step 3: Insert words and translations
     const wordsArray = words.split(',').map(word => word.trim())
     const ruArray = ru.split(',').map(word => word.trim())
     const ukArray = uk.split(',').map(word => word.trim())
