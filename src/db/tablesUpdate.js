@@ -136,8 +136,8 @@ async function loadDictionary() {
 
   for (const line of lines) {
     if (line.includes(',') && line[1] !== ' ' && line[1] !== '.') {
-      const [word, ...wordForms] = line.split(',').map(word => word.trim());
-      const wordFormsString = wordForms.join(', ');
+      const [word, ...wordForms] = line.split(',').map(word => word.trim())
+      const wordFormsString = wordForms.join(', ')
 
       if (word) {
         await pool.query('INSERT INTO pl_words (word, word_forms) VALUES ($1, $2)', [word, wordFormsString]);
@@ -153,40 +153,68 @@ async function addDataToWords() {
   for (const entry of data) {
     const { subject, words, ru, uk, en, examples } = entry
 
-    let subjectId, exampleId
-    const subjectRes = await pool.query('SELECT id FROM pl_subjects WHERE subject = $1', [subject])
-    if (subjectRes.rows.length > 0) {
-      subjectId = subjectRes.rows[0].id
-    } else {
-      const insertSubjectRes = await pool.query('INSERT INTO pl_subjects (subject) VALUES ($1) RETURNING id', [subject])
-      subjectId = insertSubjectRes.rows[0].id
-    }
-
-    const exampleRes = await pool.query('SELECT id FROM pl_examples WHERE example = $1', [examples])
-    if (exampleRes.rows.length > 0) {
-      exampleId = exampleRes.rows[0].id
-    } else {
-      const insertExampleRes = await pool.query('INSERT INTO pl_examples (example, subject) VALUES ($1, $2) RETURNING id', [examples, subjectId])
-      exampleId = insertExampleRes.rows[0].id
-    }
+    const subjectId = await getOrCreateSubjectId(subject)
+    const exampleId = await getOrCreateExampleId(examples, subjectId)
 
     const wordsArray = words.split(',').map(word => word.trim())
     const ruArray = ru.split(',').map(word => word.trim())
     const ukArray = uk.split(',').map(word => word.trim())
     const enArray = en.split(',').map(word => word.trim())
 
-    for (let i = 0; i < wordsArray.length; i++) {
-      const word = wordsArray[i]
-      const ruWord = ruArray[i] !== undefined ? ruArray[i] : ""
-      const ukWord = ukArray[i] !== undefined ? ukArray[i] : ""
-      const enWord = enArray[i] !== undefined ? enArray[i] : ""
+    await processWords(wordsArray, ruArray, ukArray, enArray, subjectId, exampleId)
+  }
+}
 
-      const wordRes = await pool.query('SELECT id FROM pl_words WHERE word = $1', [word])
-      if (wordRes.rows.length > 0) {
-        await pool.query('UPDATE pl_words SET ru = $1, uk = $2, en = $3, subject = $4, example = $5 WHERE word = $6', [ruWord, ukWord, enWord, subjectId, exampleId, word])
-      } else {
-        await pool.query('INSERT INTO pl_words (word, ru, uk, en, subject, example) VALUES ($1, $2, $3, $4, $5, $6)', [word, ruWord, ukWord, enWord, subjectId, exampleId])
+async function getOrCreateSubjectId(subject) {
+  const subjectRes = await pool.query('SELECT id FROM pl_subjects WHERE subject = $1', [subject])
+  if (subjectRes.rows.length > 0) {
+    return subjectRes.rows[0].id
+  } else {
+    const insertSubjectRes = await pool.query('INSERT INTO pl_subjects (subject) VALUES ($1) RETURNING id', [subject])
+    return insertSubjectRes.rows[0].id
+  }
+}
+
+async function getOrCreateExampleId(examples, subjectId) {
+  const exampleRes = await pool.query('SELECT id FROM pl_examples WHERE example = $1', [examples])
+  if (exampleRes.rows.length > 0) {
+    return exampleRes.rows[0].id
+  } else {
+    const insertExampleRes = await pool.query('INSERT INTO pl_examples (example, subject) VALUES ($1, $2) RETURNING id', [examples, subjectId])
+    return insertExampleRes.rows[0].id
+  }
+}
+
+async function processWords(wordsArray, ruArray, ukArray, enArray, subjectId, exampleId) {
+  for (let i = 0; i < wordsArray.length; i++) {
+    const word = wordsArray[i]
+    const ruWord = ruArray[i] !== undefined ? ruArray[i] : ""
+    const ukWord = ukArray[i] !== undefined ? ukArray[i] : ""
+    const enWord = enArray[i] !== undefined ? enArray[i] : ""
+
+    await upsertWord(word, ruWord, ukWord, enWord, subjectId, exampleId)
+  }
+}
+
+async function upsertWord(word, ruWord, ukWord, enWord, subjectId, exampleId) {
+  let wordRes
+
+  if (word.length <= 3) {
+    wordRes = await pool.query('SELECT id FROM pl_words WHERE word = $1', [word])
+  } else {
+    wordRes = await pool.query('SELECT id, word, word_forms FROM pl_words WHERE word = $1', [word])
+    if (wordRes.rows.length === 0) {
+      wordRes = await pool.query('SELECT id, word, word_forms FROM pl_words WHERE word_forms LIKE $1', [`%${word}%`])
+    }
+  }
+
+  if (wordRes.rows.length > 0) {
+    for (const row of wordRes.rows) {
+      if ((row.word_forms && (row.word_forms.includes(`, ${word}`) || row.word_forms.startsWith(`${word},`))) && row.word.startsWith(word.substring(0, 3))) {
+        await pool.query('UPDATE pl_words SET ru = $1, uk = $2, en = $3, subject = $4, example = $5 WHERE id = $6', [ruWord, ukWord, enWord, subjectId, exampleId, row.id])
       }
     }
+  } else {
+    await pool.query('INSERT INTO pl_words (word, ru, uk, en, subject, example) VALUES ($1, $2, $3, $4, $5, $6)', [word, ruWord, ukWord, enWord, subjectId, exampleId])
   }
 }
