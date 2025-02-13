@@ -14,6 +14,16 @@ module.exports = (fastify, _opts, done) => {
     // schema: dataExchangeSchema
   })
 
+  fastify.route({
+    method: 'POST',
+    url: '/co-to-jest',
+    handler: gTTSController.coToJest,
+    // preHandler: [
+    //   isAuthorizedGuard
+    // ],
+    // schema: dataExchangeSchema
+  })
+
   done()
 }
 

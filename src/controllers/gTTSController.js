@@ -1,4 +1,6 @@
 const gTTsService = require('../services/gTTsService')
+const translationService = require('../services/translation')
+const analizeService = require('../services/analize')
 
 module.exports.gTTs = async function (request, reply) {
   try {
@@ -11,3 +13,15 @@ module.exports.gTTs = async function (request, reply) {
   }
 }
 
+module.exports.coToJest = async function (request, reply) {
+  try {
+    const { text } = request.body
+    const data = await analizeService.checkText(text)
+    if (data.traslated) return reply.send(data)
+
+    const results = await translationService.callTranslate(text, 'pl_en')
+    return reply.send(results)
+  } catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}
