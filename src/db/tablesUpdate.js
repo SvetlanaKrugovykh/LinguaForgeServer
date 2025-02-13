@@ -274,4 +274,11 @@ async function setPartOfSpeech() {
     }
   }
 
+  unfilled_POS = await pool.query("SELECT id, word, word_forms FROM pl_words WHERE part_of_speech IS NULL AND word LIKE $1", ['%anin']);
+  for (const row of unfilled_POS.rows) {
+    if (row.word.endsWith('anin')) {
+      await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['rzeczownik', row.id])
+    }
+  }
+
 }
