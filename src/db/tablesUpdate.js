@@ -237,4 +237,14 @@ async function setPartOfSpeech() {
       await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['rzeczownik', row.id])
     }
   }
+
+  unfilled_POS = await pool.query("SELECT id, word, word_forms FROM pl_words WHERE part_of_speech IS NULL AND word_forms LIKE $1", ['%ą%'])
+  for (const row of unfilled_POS.rows) {
+    if (row.word_forms &&
+      (row.word_forms.includes(`ą,`) || row.word_forms.endsWith(`ą`)) &&
+      !row.word_forms.includes(`a,`)) {
+      await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['rzeczownik', row.id])
+    }
+  }
+
 }
