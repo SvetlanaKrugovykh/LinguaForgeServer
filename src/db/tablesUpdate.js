@@ -281,6 +281,48 @@ async function setPartOfSpeech() {
     }
   }
 
+  unfilled_POS = await pool.query("SELECT id, word, word_forms FROM pl_words WHERE part_of_speech IS NULL AND word LIKE $1", ['%anie']);
+  for (const row of unfilled_POS.rows) {
+    if (row.word.endsWith('anie')) {
+      await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['rzeczownik', row.id])
+    }
+  }
+
+  unfilled_POS = await pool.query("SELECT id, word, word_forms FROM pl_words WHERE part_of_speech IS NULL AND word LIKE $1", ['%stwo']);
+  for (const row of unfilled_POS.rows) {
+    if (row.word.endsWith('stwo')) {
+      await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['rzeczownik', row.id])
+    }
+  }
+
+  unfilled_POS = await pool.query("SELECT id, word, word_forms FROM pl_words WHERE part_of_speech IS NULL AND word LIKE $1", ['%owie']);
+  for (const row of unfilled_POS.rows) {
+    if (row.word.endsWith('owie')) {
+      await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['rzeczownik', row.id])
+    }
+  }
+
+  unfilled_POS = await pool.query("SELECT id, word, word_forms FROM pl_words WHERE part_of_speech IS NULL AND word LIKE $1", ['%isko']);
+  for (const row of unfilled_POS.rows) {
+    if (row.word.endsWith('isko')) {
+      await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['rzeczownik', row.id])
+    }
+  }
+
+  unfilled_POS = await pool.query("SELECT id, word, word_forms FROM pl_words WHERE part_of_speech IS NULL AND word LIKE $1", ['%nictwo']);
+  for (const row of unfilled_POS.rows) {
+    if (row.word.endsWith('nictwo')) {
+      await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['rzeczownik', row.id])
+    }
+  }
+
+  unfilled_POS = await pool.query("SELECT id, word, word_forms FROM pl_words WHERE part_of_speech IS NULL AND word LIKE $1", ['%arz']);
+  for (const row of unfilled_POS.rows) {
+    if (row.word.endsWith('arz')) {
+      await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['rzeczownik', row.id])
+    }
+  }
+
   unfilled_POS = await pool.query(`
     SELECT id, word, word_forms 
     FROM pl_words 
@@ -290,28 +332,62 @@ async function setPartOfSpeech() {
         OR word LIKE '%ne'
         OR word LIKE '%owy'
         OR word LIKE '%owa'
+        OR word LIKE '%owate'
         OR word LIKE '%owe'
         OR word LIKE '%ski'
         OR word LIKE '%ska'
         OR word LIKE '%skie'
         OR word LIKE '%i'
-        OR word LIKE '%czy')
+        OR word LIKE '%czy'        OR word LIKE '%owy'
+        OR word LIKE '%y'
+        OR word LIKE '%t' 
+        OR word LIKE '%ty' 
+        OR word LIKE '%e')
   `)
 
   for (const row of unfilled_POS.rows) {
-    if (row.word_forms &&
-      (row.word_forms.includes(`ny,`) || row.word_forms.endsWith(`ny`) ||
-        row.word_forms.includes(`na,`) || row.word_forms.endsWith(`na`) ||
-        row.word_forms.includes(`ne,`) || row.word_forms.endsWith(`ne`) ||
-        row.word_forms.includes(`owy,`) || row.word_forms.endsWith(`owy`) ||
-        row.word_forms.includes(`owa,`) || row.word_forms.endsWith(`owa`) ||
-        row.word_forms.includes(`owe,`) || row.word_forms.endsWith(`owe`) ||
-        row.word_forms.includes(`ski,`) || row.word_forms.endsWith(`ski`) ||
-        row.word_forms.includes(`ska,`) || row.word_forms.endsWith(`ska`) ||
-        row.word_forms.includes(`skie,`) || row.word_forms.endsWith(`skie`) ||
-        row.word_forms.includes(`i,`) || row.word_forms.endsWith(`i`) ||
-        row.word_forms.includes(`czy,`) || row.word_forms.endsWith(`czy`))) {
+    if (row.word.endsWith(`ny`) ||
+      row.word.endsWith(`na`) ||
+      row.word.endsWith(`ne`) ||
+      row.word.endsWith(`owy`) ||
+      row.word.endsWith(`owa`) ||
+      row.word.endsWith(`owate`) ||
+      row.word.endsWith(`owe`) ||
+      row.word.endsWith(`ski`) ||
+      row.word.endsWith(`ska`) ||
+      row.word.endsWith(`skie`) ||
+      row.word.endsWith(`i`) ||
+      row.word.endsWith(`czy`) ||
+      row.word.endsWith(`y`) ||
+      row.word.endsWith(`t`) ||
+      row.word.endsWith(`ty`) ||
+      row.word.endsWith(`e`)
+    ) {
       await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['przymiotnik', row.id]);
+    }
+  }
+
+  unfilled_POS = await pool.query(`
+  SELECT id, word, word_forms 
+  FROM pl_words 
+  WHERE part_of_speech IS NULL 
+    AND (word LIKE '%e' 
+      OR word LIKE '%o'
+      OR word LIKE '%owo') 
+`)
+
+  for (const row of unfilled_POS.rows) {
+    if (row.word.endsWith(`two`) ||
+      row.word.endsWith(`no`) ||
+      row.word.endsWith(`ło`) ||
+      row.word.endsWith(`ko`)) {
+      await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['rzeczownik', row.id])
+      continue
+    }
+    if (row.word.endsWith(`e`) ||
+      row.word.endsWith(`o`) ||
+      row.word.endsWith(`owo`)) {
+      await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['przysłówek', row.id])
     }
   }
 
