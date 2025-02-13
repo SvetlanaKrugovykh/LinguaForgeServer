@@ -76,6 +76,9 @@ module.exports.updateTables = function () {
       if (process.env.LOAD_DOP_DICT === 'true') {
         addDataToWords()
       }
+      if (process.env.SET_POS === 'true') {
+        setPartOfSpeech()
+      }
     })
     .catch((err) => {
       console.error('Error in table creation sequence:', err)
@@ -217,4 +220,15 @@ async function upsertWord(word, ruWord, ukWord, enWord, subjectId, exampleId) {
   } else {
     await pool.query('INSERT INTO pl_words (word, ru, uk, en, subject, example) VALUES ($1, $2, $3, $4, $5, $6)', [word, ruWord, ukWord, enWord, subjectId, exampleId])
   }
+}
+
+
+async function setPartOfSpeech() {
+  let unfilled_POS = {}
+
+  unfilled_POS = await pool.query("SELECT id, word, word_forms FROM pl_words WHERE part_of_speech IS NULL AND word_forms LIKE $1", ['%liśmy%'])
+  for (const row of unfilled_POS.rows) {
+    await pool.query('UPDATE pl_words SET part_of_speech = $1 WHERE id = $2', ['czasownik', row.id])
+  }
+
 }
