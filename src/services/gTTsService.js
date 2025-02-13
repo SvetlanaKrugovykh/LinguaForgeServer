@@ -8,10 +8,9 @@ module.exports.gTTs = async (queries) => {
   const results = []
   const gURL = process.env.GOOGLE_TTS_URL
   const TEMP_CATALOG = process.env.TEMP_CATALOG
-  const tempCatalog = path.join(__dirname, TEMP_CATALOG)
 
-  if (!fs.existsSync(tempCatalog)) {
-    fs.mkdirSync(tempCatalog)
+  if (!fs.existsSync(TEMP_CATALOG)) {
+    fs.mkdirSync(TEMP_CATALOG)
   }
 
   for (const query of queries) {
@@ -29,7 +28,7 @@ module.exports.gTTs = async (queries) => {
         responseType: 'stream'
       })
 
-      const filePath = path.join(tempCatalog, `${userId}_${Date.now()}_${lang}.mp3`)
+      const filePath = path.join(TEMP_CATALOG, `${userId}_${Date.now()}_${lang}.mp3`)
       const writer = fs.createWriteStream(filePath)
 
       response.data.pipe(writer)

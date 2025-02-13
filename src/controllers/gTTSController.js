@@ -17,7 +17,7 @@ module.exports.coToJest = async function (request, reply) {
   try {
     const { text } = request.body
     const data = await analizeService.checkText(text)
-    if (data.traslated) return reply.send(data)
+    if (data?.traslated && data.traslated === true) return reply.send(data)
 
     const results = await translationService.callTranslate(text, 'pl_en')
     return reply.send(results)
