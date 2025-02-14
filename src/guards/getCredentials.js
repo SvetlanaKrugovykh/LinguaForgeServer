@@ -14,4 +14,10 @@ function getSecretKey() {
   return cachedSecretKey
 }
 
-module.exports = { getSecretKey }
+function getCredentials() {
+  const serviceAccount = JSON.parse(fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'utf8'))
+  return serviceAccount
+}
+
+
+module.exports = { getSecretKey, getCredentials }

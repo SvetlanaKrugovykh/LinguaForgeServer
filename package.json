@@ -1,5 +1,6 @@
 {
 	"dependencies": {
+		"@google-cloud/translate": "^8.5.0",
 		"archiver": "^7.0.1",
 		"dotenv": "^16.4.7",
 		"fastify": "^5.2.1",
