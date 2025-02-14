@@ -22,12 +22,16 @@ module.exports.gTTs = async function (request, reply) {
     const outputFile = await mergeMP3Files(query.userId, fileNamesArray)
 
     if (outputFile && fs.existsSync(outputFile)) {
-      const fileBuffer = fs.readFileSync(outputFile)
-      if (fileBuffer.length > MAX_FILE_SIZE) {
-        return reply.status(413).send({ error: 'File too large', details: `The generated file exceeds the size limit of ${MAX_FILE_SIZE / (1024 * 1024)} MB` })
+      if (query?.isReturnFile === true) {
+        const fileBuffer = fs.readFileSync(outputFile)
+        if (fileBuffer.length > MAX_FILE_SIZE) {
+          return reply.status(413).send({ error: 'File too large', details: `The generated file exceeds the size limit of ${MAX_FILE_SIZE / (1024 * 1024)} MB` })
+        }
+        const base64File = fileBuffer.toString('base64')
+        return reply.send({ file: base64File })
+      } else {
+        return reply.send({ message: `File ${path.basename(outputFile)} saved successfully` })
       }
-      const base64File = fileBuffer.toString('base64')
-      return reply.send({ file: base64File })
     } else {
       return reply.status(500).send({ error: 'Error processing request', details: 'Output file not found or invalid' })
     }
