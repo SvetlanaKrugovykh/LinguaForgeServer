@@ -1,7 +1,7 @@
 module.exports = {
-  description: 'Sign string',
-  tags: ['sign'],
-  summary: 'Sign string',
+  description: 'Generate TTS',
+  tags: ['TTS'],
+  summary: 'Generate TTS from text',
   headers: {
     type: 'object',
     properties: {
@@ -12,29 +12,27 @@ module.exports = {
   body: {
     type: 'object',
     properties: {
-      queries: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            directory: { type: 'string' },
-            pattern: { type: 'string' },
-          },
-          required: ['directory', 'pattern'],
+      query: {
+        type: 'object',
+        properties: {
+          userId: { type: 'string' },
+          text: { type: 'string' },
+          lang: { type: 'string' },
+          isReturnFile: { type: 'boolean' },
         },
+        required: ['userId', 'text', 'lang', 'isReturnFile'],
       },
     },
-    required: ['queries'],
+    required: ['query'],
   },
   response: {
     201: {
       description: 'Successful response',
       type: 'object',
       properties: {
-        success: { type: 'boolean' },
-        results: { type: 'array' },
+        file: { type: 'string' },
       },
-      required: ['success'],
+      required: ['file'],
     },
     500: {
       description: 'Internal server error',

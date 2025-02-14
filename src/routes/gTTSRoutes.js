@@ -1,6 +1,6 @@
 const gTTSController = require('../controllers/gTTSController')
 const isAuthorizedGuard = require('../guards/isAuthorizedGuard')
-const dataExchangeSchema = require('../schemas/dataExchangeSchema')
+const dataTTSSchema = require('../schemas/dataTTSSchema')
 
 module.exports = (fastify, _opts, done) => {
 
@@ -11,7 +11,7 @@ module.exports = (fastify, _opts, done) => {
     // preHandler: [
     //   isAuthorizedGuard
     // ],
-    // schema: dataExchangeSchema
+    schema: dataTTSSchema
   })
 
   fastify.route({
