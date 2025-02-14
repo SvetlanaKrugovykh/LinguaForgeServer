@@ -43,11 +43,11 @@ module.exports.gTTs = async function (request, reply) {
 module.exports.coToJest = async function (request, reply) {
   try {
     const { text } = request.body
-    const data = await analizeService.checkText(text)
-    if (data?.traslated && data.traslated === true) return reply.send(data)
+    const dataArray = await analizeService.checkText(text)
 
-    const results = await translationService.g_translateText(text, 'pl', 'en')
-    return reply.send(results)
+    return reply.send(dataArray)
+
+
   } catch (error) {
     reply.status(500).send({ error: 'Error processing request', details: error.message })
   }
