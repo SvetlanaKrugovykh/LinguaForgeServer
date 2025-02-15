@@ -59,6 +59,23 @@ const tableQueries = {
       FOREIGN KEY (example) REFERENCES pl_examples(id),
       FOREIGN KEY (subject) REFERENCES pl_subjects(id)
     )`,
+  'pl_tasks': `
+    CREATE TABLE pl_tasks (
+      id SERIAL PRIMARY KEY,
+      topic TEXT NOT NULL,
+      level TEXT NOT NULL,
+      source TEXT NOT NULL,
+      year INTEGER,
+      type TEXT NOT NULL,
+      value TEXT NOT NULL,
+      total_topic INTEGER,
+      task_number INTEGER,
+      tasks_count INTEGER,
+      text TEXT,
+      options TEXT,
+      correct TEXT,
+      explanation TEXT
+    )`
 }
 
 
@@ -68,6 +85,7 @@ module.exports.updateTables = function () {
     .then(() => checkAndCreateTable('pl_subjects'))
     .then(() => checkAndCreateTable('pl_examples'))
     .then(() => checkAndCreateTable('pl_words'))
+    .then(() => checkAndCreateTable('pl_tasks'))
     .then(() => {
       console.log('All tables created or already exist.')
       if (process.env.LOAD_BASE_DICT === 'true') {
@@ -75,6 +93,9 @@ module.exports.updateTables = function () {
       }
       if (process.env.LOAD_DOP_DICT === 'true') {
         addDataToWords()
+      }
+      if (process.env.LOAD_EXAM_PARTS === 'true') {
+        addExamsData()
       }
       if (process.env.SET_POS === 'true') {
         setPartOfSpeech()
@@ -146,6 +167,17 @@ async function loadDictionary() {
         await pool.query('INSERT INTO pl_words (word, word_forms) VALUES ($1, $2)', [word, wordFormsString]);
       }
     }
+  }
+}
+
+async function addExamsData() {
+  const dictionaryPath = path.join(__dirname, '../../data/pl/', `${process.env.EXAM_PARTS_NAME}.json`)
+  const data = JSON.parse(fs.readFileSync(dictionaryPath, 'utf8'))
+
+  for (const entry of data) {
+    const { topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation } = entry
+
+    await pool.query('INSERT INTO pl_tasks (topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation])
   }
 }
 

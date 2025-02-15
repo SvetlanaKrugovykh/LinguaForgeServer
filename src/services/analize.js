@@ -1,4 +1,5 @@
 const db = require('../db/requests')
+require('dotenv').config()
 
 module.exports.checkText = async function (text) {
   const dataArray = await db.getWords(text)
