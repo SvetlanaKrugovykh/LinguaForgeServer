@@ -19,15 +19,24 @@ module.exports.getWords = async function (text) {
 }
 
 module.exports.updateWord = async function (row) {
-  const translations = await Promise.all([
-    row.en ? row.en : g_translateText(row.word, 'pl', 'en'),
-    row.ru ? row.ru : g_translateText(row.word, 'pl', 'ru'),
-    row.uk ? row.uk : g_translateText(row.word, 'pl', 'uk')
-  ])
+  try {
+    const translations = await Promise.all([
+      row.en ? row.en : g_translateText(row.word, 'pl', 'en'),
+      row.ru ? row.ru : g_translateText(row.word, 'pl', 'ru'),
+      row.uk ? row.uk : g_translateText(row.word, 'pl', 'uk')
+    ])
 
-  const [en, ru, uk] = translations
+    const [en, ru, uk] = translations
 
-  await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3 WHERE id = $4', [en, ru, uk, row.id])
+    await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3 WHERE id = $4', [en, ru, uk, row.id])
 
-  return await pool.query('SELECT * FROM pl_words WHERE id = $1', [row.id])
+    const result = await pool.query('SELECT * FROM pl_words WHERE id = $1', [row.id]);
+    if (!result.rows || result.rows.length === 0) {
+      return null
+    }
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error updating word:', error)
+    return null
+  }
 }
