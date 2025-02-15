@@ -29,7 +29,7 @@ module.exports.gTTs = async function (request, reply) {
         const base64File = fileBuffer.toString('base64')
         return reply.send({ file: base64File })
       } else {
-        return reply.send({ message: `File ${path.basename(outputFile)} saved successfully` })
+        return reply.send({ message: `File ${path.basename(outputFile)} saved successfully`, filename: outputFile })
       }
     } else {
       return reply.status(500).send({ error: 'Error processing request', details: 'Output file not found or invalid' })
