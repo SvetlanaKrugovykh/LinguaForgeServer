@@ -24,6 +24,17 @@ module.exports = (fastify, _opts, done) => {
     // schema: dataExchangeSchema
   })
 
+
+  fastify.route({
+    method: 'POST',
+    url: '/get-test',
+    handler: gTTSController.getTest,
+    // preHandler: [
+    //   isAuthorizedGuard
+    // ],
+    // schema: dataExchangeSchema
+  })
+
   done()
 }
 

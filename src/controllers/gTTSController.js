@@ -1,5 +1,6 @@
 const gTTsService = require('../services/gTTsService')
 const analizeService = require('../services/analize')
+const testsService = require('../services/testsService')
 const { mergeMP3Files } = require('../services/mergeService')
 const fs = require('fs')
 const path = require('path')
@@ -47,6 +48,16 @@ module.exports.coToJest = async function (request, reply) {
     return reply.send(dataArray)
 
 
+  } catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}
+
+module.exports.getTest = async function (request, reply) {
+  try {
+    const dataArray = await testsService.getTestData(request.body)
+
+    return reply.send(dataArray)
   } catch (error) {
     reply.status(500).send({ error: 'Error processing request', details: error.message })
   }
