@@ -1,7 +1,8 @@
 const db = require('../db/requests')
-module.exports.getTestData = async function (data) {
+module.exports.getTestData = async function (body) {
   try {
 
+    const data = body.query
     const source = 'gov.pl'
     const level = 'B1'
     let topic = 'Rozumienie tekstów pisanych'
