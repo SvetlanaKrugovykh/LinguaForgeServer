@@ -17,7 +17,7 @@ const tableQueries = {
   'tg_users': `
     CREATE TABLE tg_users (
       id SERIAL PRIMARY KEY,
-      user_id BIGINT NOT NULL,
+      user_id BIGINT NOT NULL UNIQUE,
       first_name VARCHAR(255) NOT NULL,
       last_name VARCHAR(255),
       username VARCHAR(255),
@@ -75,6 +75,16 @@ const tableQueries = {
       options TEXT,
       correct TEXT,
       explanation TEXT
+    )`,
+  'pl_t_results': `
+    CREATE TABLE pl_t_results (
+      id SERIAL PRIMARY KEY,
+      user_id BIGINT NOT NULL,
+      task_id INTEGER NOT NULL,
+      correct INTEGER,
+      incorrect INTEGER,
+      FOREIGN KEY (task_id) REFERENCES pl_tasks(id),
+      FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
     )`
 }
 
@@ -86,6 +96,7 @@ module.exports.updateTables = function () {
     .then(() => checkAndCreateTable('pl_examples'))
     .then(() => checkAndCreateTable('pl_words'))
     .then(() => checkAndCreateTable('pl_tasks'))
+    .then(() => checkAndCreateTable('pl_t_results'))
     .then(() => {
       console.log('All tables created or already exist.')
       if (process.env.LOAD_BASE_DICT === 'true') {
