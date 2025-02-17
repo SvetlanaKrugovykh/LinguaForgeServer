@@ -3,8 +3,8 @@ module.exports.getTestData = async function (body) {
   try {
 
     const data = body.query
-    const source = 'gov.pl'
-    const level = 'B1'
+    const source = 'TELC'
+    const level = 'B1-B2'
     let topic = 'Rozumienie tekstów pisanych'
 
     switch (data.part1_3) {

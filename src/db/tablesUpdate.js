@@ -128,7 +128,7 @@ function checkAndCreateTable(tableName) {
       (err, res) => {
         if (err) {
           console.error(`Error checking if table ${tableName} exists:`, err)
-          reject(err)
+          reject(new Error(err))
           return
         }
         const tableExists = res.rows[0].exists
