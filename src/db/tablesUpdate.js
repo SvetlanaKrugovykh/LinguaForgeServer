@@ -106,7 +106,8 @@ module.exports.updateTables = function () {
         addDataToWords()
       }
       if (process.env.LOAD_EXAM_PARTS === 'true') {
-        addExamsData()
+        const filename = process.env.EXAM_PARTS_NAME
+        module.exports.addExamsData(filename)
       }
       if (process.env.SET_POS === 'true') {
         setPartOfSpeech()
@@ -181,8 +182,8 @@ async function loadDictionary() {
   }
 }
 
-async function addExamsData() {
-  const dictionaryPath = path.join(__dirname, '../../data/pl/', `${process.env.EXAM_PARTS_NAME}.json`)
+module.exports.addExamsData = async function (filename) {
+  const dictionaryPath = path.join(__dirname, '../../data/pl/', `${filename}.json`)
   const data = JSON.parse(fs.readFileSync(dictionaryPath, 'utf8'))
 
   for (const entry of data) {
