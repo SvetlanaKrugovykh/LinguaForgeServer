@@ -12,8 +12,13 @@ const pool = new Pool({
 })
 
 module.exports.getWords = async function (text) {
+  let { rows } = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text])
 
-  const { rows } = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text])
+  if (!rows || rows.length === 0) {
+    const likeText = `%${text}%`
+    const result = await pool.query('SELECT * FROM pl_words WHERE word_forms LIKE $1', [likeText])
+    rows = result.rows
+  }
 
   return rows
 }
