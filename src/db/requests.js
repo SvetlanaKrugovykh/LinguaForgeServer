@@ -25,7 +25,7 @@ module.exports.getWords = async function (text) {
 
 
 module.exports.getTasks = async function (topic, level, source) {
-  const { rows } = await pool.query('SELECT * FROM pl_tasks WHERE topic = $1 AND level = $2 AND source = $3', [topic, level, source])
+  const { rows } = await pool.query('SELECT * FROM pl_tasks WHERE topic = $1 AND level = $2 AND source = $3 LIMIT 1', [topic, level, source])
   return rows
 }
 

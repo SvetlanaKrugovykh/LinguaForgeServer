@@ -1,7 +1,9 @@
 const db = require('../db/requests')
+const gTTsService = require('./gTTsService')
+const { mergeMP3Files } = require('./mergeService')
+
 module.exports.getTestData = async function (body) {
   try {
-
     const data = body.query
     const source = 'TELC'
     const level = 'B1-B2'
@@ -18,11 +20,42 @@ module.exports.getTestData = async function (body) {
         topic = 'POPRAWNOŚĆ GRAMATYCZNA'
         break
     }
+
+
     const result = await db.getTasks(topic, level, source)
-    return result
+    if (!result || result.length === 0) return null
+
+
+    if (data.part1_3 === '1') {
+      return await saveVoiceTask(data, result[0])
+    } else {
+      return result[0]
+    }
 
   } catch (error) {
     console.error('Error getting test data:', error)
+    return null
+  }
+}
+
+async function saveVoiceTask(data, result) {
+  const { userId, lang } = data
+  try {
+    const sentences = result.text.split(/[\.\?]/).map(sentence => sentence.trim()).filter(sentence => sentence.length > 0)
+    const queries = sentences.map(sentence => ({
+      userId: userId,
+      text: sentence,
+      lang: lang
+    }))
+
+    const results = await gTTsService.gTTs(queries)
+    const fileNamesArray = results.map(result => result.filePath)
+    const outputFile = await mergeMP3Files(userId, fileNamesArray)
+
+    result.audio = outputFile
+    return result
+  } catch (error) {
+    console.error('Error saving voice task:', error)
     return null
   }
 }
