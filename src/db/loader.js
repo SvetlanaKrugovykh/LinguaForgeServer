@@ -1,5 +1,5 @@
-const addExamsData = require('./addExamsData')
+const addExamsData = require('./tablesUpdate').addExamsData
 
-const filename = 'exams'
+const filename = 'TELC-probny.json'
 
 addExamsData(filename)
