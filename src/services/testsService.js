@@ -18,15 +18,8 @@ module.exports.getTestData = async function (body) {
         topic = 'POPRAWNOŚĆ GRAMATYCZNA'
         break
     }
-
-
     const result = await db.getTasks(topic, level, source)
-
-    if (data.total === '1') {
-      return result[0]
-    } else {
-      return result
-    }
+    return result
 
   } catch (error) {
     console.error('Error getting test data:', error)
