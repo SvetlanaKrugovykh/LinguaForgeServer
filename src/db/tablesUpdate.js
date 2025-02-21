@@ -203,10 +203,10 @@ async function addDataToWords() {
   const data = JSON.parse(fs.readFileSync(dictionaryPath, 'utf8'))
 
   for (const entry of data) {
-    const { subject, words, ru, uk, en, examples } = entry
+    const { subject, words, ru, uk, en, examples, topic } = entry
 
     const subjectId = await getOrCreateSubjectId(subject)
-    const exampleId = await getOrCreateExampleId(examples, subjectId)
+    const exampleId = await getOrCreateExampleId(examples, subjectId, topic)
 
     const wordsArray = words.split(',').map(word => word.trim())
     const ruArray = ru.split(',').map(word => word.trim())
@@ -227,12 +227,12 @@ async function getOrCreateSubjectId(subject) {
   }
 }
 
-async function getOrCreateExampleId(examples, subjectId) {
+async function getOrCreateExampleId(examples, subjectId, topic) {
   const exampleRes = await pool.query('SELECT id FROM pl_examples WHERE example = $1', [examples])
   if (exampleRes.rows.length > 0) {
     return exampleRes.rows[0].id
   } else {
-    const insertExampleRes = await pool.query('INSERT INTO pl_examples (example, subject) VALUES ($1, $2) RETURNING id', [examples, subjectId])
+    const insertExampleRes = await pool.query('INSERT INTO pl_examples (example, subject, topic) VALUES ($1, $2, $3) RETURNING id', [examples, subjectId, topic])
     return insertExampleRes.rows[0].id
   }
 }
