@@ -41,6 +41,10 @@ const tableQueries = {
       id SERIAL PRIMARY KEY,
       example TEXT NOT NULL,
       subject INTEGER,
+      topic TEXT,
+      level TEXT,
+      source TEXT,
+      size TEXT,
       FOREIGN KEY (subject) REFERENCES pl_subjects(id)
     )`,
   'pl_words': `

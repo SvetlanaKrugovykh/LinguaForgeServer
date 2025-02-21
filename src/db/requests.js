@@ -12,10 +12,10 @@ const pool = new Pool({
 })
 
 module.exports.getWords = async function (text) {
-  let { rows } = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text])
+  let { rows } = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text.trim()])
 
   if (!rows || rows.length === 0) {
-    const likeText = `%${text}%`
+    const likeText = `%${text.trim()}%`
     const result = await pool.query('SELECT * FROM pl_words WHERE word_forms LIKE $1', [likeText])
     rows = result.rows
   }
@@ -29,6 +29,16 @@ module.exports.getTasks = async function (topic, level, source) {
   return rows
 }
 
+module.exports.getOpuses = async function (_topic, _level, _source, size) {
+  if (size === '1') {
+    const { rows } = await pool.query('SELECT * FROM pl_examples WHERE example IS NOT NULL AND LENGTH(example) < 650 LIMIT 1', [])
+    return rows
+  }
+
+  const { rows } = await pool.query('SELECT * FROM pl_examples WHERE example IS NOT NULL AND LENGTH(example) > 650 LIMIT 1', [])
+  return rows
+
+}
 
 module.exports.updateWord = async function (row) {
   try {

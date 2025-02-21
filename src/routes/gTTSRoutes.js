@@ -35,6 +35,16 @@ module.exports = (fastify, _opts, done) => {
     // schema: dataExchangeSchema
   })
 
+  fastify.route({
+    method: 'POST',
+    url: '/get-opus',
+    handler: gTTSController.getOpus,
+    // preHandler: [
+    //   isAuthorizedGuard
+    // ],
+    // schema: dataExchangeSchema
+  })
+
   done()
 }
 

@@ -38,6 +38,28 @@ module.exports.getTestData = async function (body) {
   }
 }
 
+module.exports.getOpusData = async function (body) {
+  try {
+    const data = body.query
+    const source = 'TELC'
+    const level = 'B1-B2'
+    let topic = 'Pisanie'
+    const size = data.size
+
+    if (data.part4_5 === '5') topic = 'Mówienie'
+
+    const result = await db.getOpuses(topic, level, source, size)
+    if (!result || result.length === 0) return null
+
+    return result[0]
+
+  } catch (error) {
+    console.error('Error getting test data:', error)
+    return null
+  }
+}
+
+
 async function saveVoiceTask(data, result) {
   const { userId, lang } = data
   try {

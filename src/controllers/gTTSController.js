@@ -62,3 +62,15 @@ module.exports.getTest = async function (request, reply) {
     reply.status(500).send({ error: 'Error processing request', details: error.message })
   }
 }
+
+
+module.exports.getOpus = async function (request, reply) {
+  try {
+    const dataArray = await testsService.getOpusData(request.body)
+
+    return reply.send(dataArray)
+  } catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}
+
