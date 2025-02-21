@@ -33,10 +33,22 @@ module.exports.getOpuses = async function (_topic, _level, _source, size) {
   let rows = []
 
   if (size === '1') {
-    const result = await pool.query('SELECT * FROM pl_examples WHERE example IS NOT NULL AND LENGTH(example) < 650 LIMIT 1', [])
+    const result = await pool.query(`
+      SELECT pl_examples.*, pl_subjects.subject 
+      FROM pl_examples 
+      LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id 
+      WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) < 650 
+      LIMIT 1
+    `)
     rows = result.rows
   } else {
-    const result = await pool.query('SELECT * FROM pl_examples WHERE example IS NOT NULL AND LENGTH(example) > 650 LIMIT 1', [])
+    const result = await pool.query(`
+      SELECT pl_examples.*, pl_subjects.subject 
+      FROM pl_examples 
+      LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id 
+      WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) > 650 
+      LIMIT 1
+    `)
     rows = result.rows
   }
 
