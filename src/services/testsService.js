@@ -51,7 +51,7 @@ module.exports.getOpusData = async function (body) {
     const result = await db.getOpuses(topic, level, source, size)
     if (!result || result.length === 0) return null
 
-    return result[0]
+    return result
 
   } catch (error) {
     console.error('Error getting test data:', error)

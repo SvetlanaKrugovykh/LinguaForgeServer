@@ -30,14 +30,23 @@ module.exports.getTasks = async function (topic, level, source) {
 }
 
 module.exports.getOpuses = async function (_topic, _level, _source, size) {
+  let rows = []
+
   if (size === '1') {
-    const { rows } = await pool.query('SELECT * FROM pl_examples WHERE example IS NOT NULL AND LENGTH(example) < 650 LIMIT 1', [])
-    return rows
+    const result = await pool.query('SELECT * FROM pl_examples WHERE example IS NOT NULL AND LENGTH(example) < 650 LIMIT 1', [])
+    rows = result.rows
+  } else {
+    const result = await pool.query('SELECT * FROM pl_examples WHERE example IS NOT NULL AND LENGTH(example) > 650 LIMIT 1', [])
+    rows = result.rows
   }
 
-  const { rows } = await pool.query('SELECT * FROM pl_examples WHERE example IS NOT NULL AND LENGTH(example) > 650 LIMIT 1', [])
-  return rows
+  if (rows.length > 0) {
+    const exampleId = rows[0].id;
+    const wordsResult = await pool.query('SELECT * FROM pl_words WHERE example = $1 LIMIT 100', [exampleId]);
+    return { example: rows[0], words: wordsResult.rows };
+  }
 
+  return { example: null, words: [] };
 }
 
 module.exports.updateWord = async function (row) {

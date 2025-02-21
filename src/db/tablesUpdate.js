@@ -39,6 +39,7 @@ const tableQueries = {
   'pl_examples': `
     CREATE TABLE pl_examples (
       id SERIAL PRIMARY KEY,
+      description TEXT,
       example TEXT NOT NULL,
       subject INTEGER,
       topic TEXT,
