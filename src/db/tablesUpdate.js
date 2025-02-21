@@ -86,8 +86,12 @@ const tableQueries = {
       id SERIAL PRIMARY KEY,
       user_id BIGINT NOT NULL,
       task_id INTEGER NOT NULL,
+      level TEXT NOT NULL,
+      source TEXT NOT NULL,
       correct INTEGER,
       incorrect INTEGER,
+      lang TEXT NOT NULL,
+      part TEXT NOT NULL,
       FOREIGN KEY (task_id) REFERENCES pl_tasks(id),
       FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
     )`

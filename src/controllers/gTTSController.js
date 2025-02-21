@@ -74,3 +74,12 @@ module.exports.getOpus = async function (request, reply) {
   }
 }
 
+module.exports.userDataMemorize = async function (request, reply) {
+  try {
+    const dataArray = await testsService.setUserData(request.body)
+
+    return reply.send(dataArray)
+  } catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}

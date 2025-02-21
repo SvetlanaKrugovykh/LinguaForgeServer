@@ -83,3 +83,26 @@ module.exports.updateWord = async function (row) {
     return null
   }
 }
+
+module.exports.setUserTasksData = async function (data) {
+  try {
+    const { currentTest, userId, lang, part, success } = data
+    const taskId = currentTest.id
+    const source = currentTest.source
+    const level = currentTest.level
+
+    const { rows } = await pool.query('SELECT * FROM pl_t_results WHERE user_id = $1 AND task_id = $2  AND source = $3 AND lang = $4 AND part = $5 AND level = $6', [userId, taskId, source, lang, part, level])
+
+    if (rows.length > 0) {
+      if (success) {
+        await pool.query('UPDATE pl_t_results SET correct = correct + 1 WHERE user_id = $1 AND task_id = $2', [userId, taskId])
+      } else {
+        await pool.query('UPDATE pl_t_results SET incorrect = incorrect + 1 WHERE user_id = $1 AND task_id = $2', [userId, taskId])
+      }
+    } else {
+      await pool.query('INSERT INTO pl_t_results (user_id, task_id, correct, incorrect, source, lang, part, level) VALUES ($1, $2, $3, $4 , $5, $6, $7, $8)', [userId, taskId, success ? 1 : 0, success ? 0 : 1, source, lang, part, level])
+    }
+  } catch (error) {
+    console.error('Error setUserTasksData:', error)
+  }
+}

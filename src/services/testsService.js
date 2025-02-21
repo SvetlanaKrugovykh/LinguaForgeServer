@@ -81,3 +81,14 @@ async function saveVoiceTask(data, result) {
     return null
   }
 }
+
+module.exports.setUserData = async function (body) {
+  try {
+    const data = body.query
+    const result = await db.setUserTasksData(data)
+    return result
+  } catch (error) {
+    console.error('Error setting user data:', error)
+    return null
+  }
+}

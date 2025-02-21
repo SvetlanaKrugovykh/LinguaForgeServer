@@ -45,6 +45,16 @@ module.exports = (fastify, _opts, done) => {
     // schema: dataExchangeSchema
   })
 
+  fastify.route({
+    method: 'POST',
+    url: '/user-data-memorize',
+    handler: gTTSController.userDataMemorize,
+    // preHandler: [
+    //   isAuthorizedGuard
+    // ],
+    // schema: dataExchangeSchema
+  })
+
   done()
 }
 
