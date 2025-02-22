@@ -1,6 +1,7 @@
 const gTTsService = require('../services/gTTsService')
 const analizeService = require('../services/analize')
 const testsService = require('../services/testsService')
+const opusService = require('../services/opusService')
 const usersService = require('../services/usersService')
 const { mergeMP3Files } = require('../services/mergeService')
 const fs = require('fs')
@@ -30,6 +31,19 @@ module.exports.addNewTest = async function (request, reply) {
     reply.status(500).send({ error: 'Error processing request', details: error.message })
   }
 }
+
+module.exports.addNewOpus = async function (request, reply) {
+  try {
+    const body = request.body
+    const dataArray = await opusService.addNewOpus(body)
+    return reply.send(dataArray)
+  }
+  catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}
+
+
 
 module.exports.gTTs = async function (request, reply) {
   try {
