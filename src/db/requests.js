@@ -33,6 +33,12 @@ module.exports.saveUserSet = async function (body) {
   }
 }
 
+module.exports.addNewTest = async function (entry) {
+  const { topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation } = entry
+
+  await pool.query('INSERT INTO pl_tasks (topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation])
+}
+
 module.exports.getWords = async function (text) {
   let { rows } = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text.trim()])
 
@@ -44,7 +50,6 @@ module.exports.getWords = async function (text) {
 
   return rows
 }
-
 
 module.exports.getTasks = async function (topic, level, source) {
   const { rows } = await pool.query('SELECT * FROM pl_tasks WHERE topic = $1 AND level = $2 AND source = $3 LIMIT 1', [topic, level, source])

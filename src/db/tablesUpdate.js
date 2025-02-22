@@ -2,6 +2,7 @@ const { Pool } = require('pg')
 const dotenv = require('dotenv')
 const fs = require('fs')
 const path = require('path')
+const db = require('./requests')
 
 dotenv.config()
 
@@ -196,9 +197,7 @@ module.exports.addExamsData = async function (filename) {
   const data = JSON.parse(fs.readFileSync(dictionaryPath, 'utf8'))
 
   for (const entry of data) {
-    const { topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation } = entry
-
-    await pool.query('INSERT INTO pl_tasks (topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation])
+    await db.addNewTest(entry)
   }
 }
 

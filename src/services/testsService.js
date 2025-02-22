@@ -2,6 +2,16 @@ const db = require('../db/requests')
 const gTTsService = require('./gTTsService')
 const { mergeMP3Files } = require('./mergeService')
 
+module.exports.addNewTest = async function (body) {
+  try {
+    const result = await db.addNewTest(body)
+    return result
+  } catch (error) {
+    console.error('Error adding new test:', error)
+    return null
+  }
+}
+
 module.exports.getTestData = async function (body) {
   try {
     const data = body.query
