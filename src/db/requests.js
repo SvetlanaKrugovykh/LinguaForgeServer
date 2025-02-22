@@ -77,59 +77,33 @@ module.exports.getOpuses = async function (topic, _level, _source, size, userId)
   let rows = []
 
   if (size === '1') {
-    rows = await pool.query(`
+    const result = await pool.query(`
       SELECT pl_examples.*, pl_subjects.subject 
       FROM pl_examples 
       LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id 
-      WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) < 650 
-      AND pl_examples.id NOT IN (SELECT opus_id FROM pl_o_results WHERE user_id = $1)
-      ORDER BY RANDOM() 
+      WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) < 650 AND topic = $1
       LIMIT 1
-    `, [userId]).rows
+    `, [topic]);
+    rows = result.rows;
   } else {
-    rows = await pool.query(`
+    const result = await pool.query(`
       SELECT pl_examples.*, pl_subjects.subject 
       FROM pl_examples 
       LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id 
-      WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) > 650 
-      AND pl_examples.id NOT IN (SELECT opus_id FROM pl_o_results WHERE user_id = $1)
-      ORDER BY RANDOM() 
+      WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) > 650 AND topic = $1
       LIMIT 1
-    `, [userId]).rows
-  }
-
-  if (rows.length === 0) {
-    if (size === '1') {
-      rows = await pool.query(`
-        SELECT pl_examples.*, pl_subjects.subject 
-        FROM pl_examples 
-        LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id 
-        WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) < 650 
-        AND pl_examples.id IN (SELECT opus_id FROM pl_o_results WHERE user_id = $1 AND correct < incorrect)
-        ORDER BY RANDOM() 
-        LIMIT 1
-      `, [userId]).rows
-    } else {
-      rows = await pool.query(`
-        SELECT pl_examples.*, pl_subjects.subject 
-        FROM pl_examples 
-        LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id 
-        WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) > 650 
-        AND pl_examples.id IN (SELECT opus_id FROM pl_o_results WHERE user_id = $1 AND correct < incorrect)
-        ORDER BY RANDOM() 
-        LIMIT 1
-      `, [userId]).rows
-    }
+    `, [topic]);
+    rows = result.rows;
   }
 
   if (rows.length > 0) {
-    const exampleId = rows[0].id
-    const wordsResult = await pool.query('SELECT * FROM pl_words WHERE example = $1 LIMIT 100', [exampleId])
-    return { example: rows[0], words: wordsResult.rows }
+    const exampleId = rows[0].id;
+    const wordsResult = await pool.query('SELECT * FROM pl_words WHERE example = $1 LIMIT 100', [exampleId]);
+    return { example: rows[0], words: wordsResult.rows };
   }
 
-  return { example: null, words: [] }
-}
+  return { example: null, words: [] };
+};
 
 module.exports.updateWord = async function (row) {
   try {
