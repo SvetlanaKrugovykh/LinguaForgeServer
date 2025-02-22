@@ -15,6 +15,7 @@ module.exports.addNewTest = async function (body) {
 module.exports.getTestData = async function (body) {
   try {
     const data = body.query
+    const userId = data.userId
     const source = 'TELC'
     const level = 'B1-B2'
     let topic = 'Rozumienie tekstów pisanych'
@@ -32,7 +33,7 @@ module.exports.getTestData = async function (body) {
     }
 
 
-    const result = await db.getTasks(topic, level, source)
+    const result = await db.getTasks(topic, level, source, userId)
     if (!result || result.length === 0) return null
 
 
@@ -51,6 +52,7 @@ module.exports.getTestData = async function (body) {
 module.exports.getOpusData = async function (body) {
   try {
     const data = body.query
+    const userId = data.userId
     const source = 'TELC'
     const level = 'B1-B2'
     let topic = 'Pisanie'
@@ -59,7 +61,7 @@ module.exports.getOpusData = async function (body) {
     if (data.part4_6 === '5') topic = 'Mówienie'
     if (data.part4_6 === '6') topic = 'Słownictwo'
 
-    const result = await db.getOpuses(topic, level, source, size)
+    const result = await db.getOpuses(topic, level, source, size, userId)
     if (!result || result.length === 0) return null
 
     return result

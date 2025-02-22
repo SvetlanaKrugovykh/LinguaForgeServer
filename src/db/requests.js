@@ -51,32 +51,75 @@ module.exports.getWords = async function (text) {
   return rows
 }
 
-module.exports.getTasks = async function (topic, level, source) {
-  const { rows } = await pool.query('SELECT * FROM pl_tasks WHERE topic = $1 AND level = $2 AND source = $3 LIMIT 1', [topic, level, source])
+module.exports.getTasks = async function (topic, level, source, userId) {
+  let { rows } = await pool.query(`
+    SELECT * FROM pl_tasks 
+    WHERE topic = $1 AND level = $2 AND source = $3 
+    AND id NOT IN (SELECT task_id FROM pl_t_results WHERE user_id = $4)
+    ORDER BY RANDOM() 
+    LIMIT 1
+  `, [topic, level, source, userId])
+
+  if (rows.length === 0) {
+    rows = await pool.query(`
+      SELECT * FROM pl_tasks 
+      WHERE topic = $1 AND level = $2 AND source = $3 
+      AND id IN (SELECT task_id FROM pl_t_results WHERE user_id = $4 AND correct < incorrect)
+      ORDER BY RANDOM() 
+      LIMIT 1
+    `, [topic, level, source, userId]).rows
+  }
+
   return rows
 }
 
-module.exports.getOpuses = async function (topic, _level, _source, size) {
+module.exports.getOpuses = async function (topic, _level, _source, size, userId) {
   let rows = []
 
   if (size === '1') {
-    const result = await pool.query(`
+    rows = await pool.query(`
       SELECT pl_examples.*, pl_subjects.subject 
       FROM pl_examples 
       LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id 
-      WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) < 650 AND topic = $1
+      WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) < 650 
+      AND pl_examples.id NOT IN (SELECT opus_id FROM pl_o_results WHERE user_id = $1)
+      ORDER BY RANDOM() 
       LIMIT 1
-    `, [topic])
-    rows = result.rows
+    `, [userId]).rows
   } else {
-    const result = await pool.query(`
+    rows = await pool.query(`
       SELECT pl_examples.*, pl_subjects.subject 
       FROM pl_examples 
       LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id 
-      WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) > 650 AND topic = $1
+      WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) > 650 
+      AND pl_examples.id NOT IN (SELECT opus_id FROM pl_o_results WHERE user_id = $1)
+      ORDER BY RANDOM() 
       LIMIT 1
-    `, [topic])
-    rows = result.rows
+    `, [userId]).rows
+  }
+
+  if (rows.length === 0) {
+    if (size === '1') {
+      rows = await pool.query(`
+        SELECT pl_examples.*, pl_subjects.subject 
+        FROM pl_examples 
+        LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id 
+        WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) < 650 
+        AND pl_examples.id IN (SELECT opus_id FROM pl_o_results WHERE user_id = $1 AND correct < incorrect)
+        ORDER BY RANDOM() 
+        LIMIT 1
+      `, [userId]).rows
+    } else {
+      rows = await pool.query(`
+        SELECT pl_examples.*, pl_subjects.subject 
+        FROM pl_examples 
+        LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id 
+        WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) > 650 
+        AND pl_examples.id IN (SELECT opus_id FROM pl_o_results WHERE user_id = $1 AND correct < incorrect)
+        ORDER BY RANDOM() 
+        LIMIT 1
+      `, [userId]).rows
+    }
   }
 
   if (rows.length > 0) {
