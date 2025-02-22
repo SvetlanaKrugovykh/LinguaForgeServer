@@ -56,7 +56,8 @@ module.exports.getOpusData = async function (body) {
     let topic = 'Pisanie'
     const size = data.size
 
-    if (data.part4_5 === '5') topic = 'Mówienie'
+    if (data.part4_6 === '5') topic = 'Mówienie'
+    if (data.part4_6 === '6') topic = 'Słownictwo'
 
     const result = await db.getOpuses(topic, level, source, size)
     if (!result || result.length === 0) return null

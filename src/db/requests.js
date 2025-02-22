@@ -133,3 +133,27 @@ module.exports.setUserTasksData = async function (data) {
     console.error('Error setUserTasksData:', error)
   }
 }
+
+module.exports.setUserOpusData = async function (data) {
+  try {
+    const { currentOpus, userId, lang, part, success } = data
+    const opusId = currentOpus.example.id
+    const level = currentOpus.example.level
+
+    const { rows } = await pool.query('SELECT * FROM pl_o_results WHERE user_id = $1 AND opus_id = $2 AND lang = $3 AND part = $4 AND level = $5', [userId, opusId, lang, part, level])
+
+    if (rows.length > 0) {
+      if (success) {
+        await pool.query('UPDATE pl_o_results SET correct = correct + 1 WHERE user_id = $1 AND opus_id = $2', [userId, opusId])
+      } else {
+        await pool.query('UPDATE pl_o_results SET incorrect = incorrect + 1 WHERE user_id = $1 AND opus_id = $2', [userId, opusId])
+      }
+    } else {
+      await pool.query('INSERT INTO pl_o_results (user_id, opus_id, correct, incorrect, lang, part, level) VALUES ($1, $2, $3, $4 , $5, $6, $7)', [userId, opusId, success ? 1 : 0, success ? 0 : 1, lang, part, level])
+    }
+  } catch (error) {
+    console.error('Error setUserTasksData:', error)
+  }
+}
+
+

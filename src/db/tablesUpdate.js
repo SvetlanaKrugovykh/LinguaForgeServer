@@ -96,6 +96,19 @@ const tableQueries = {
       part TEXT NOT NULL,
       FOREIGN KEY (task_id) REFERENCES pl_tasks(id),
       FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
+    )`,
+  'pl_o_results': `
+    CREATE TABLE pl_o_results (
+      id SERIAL PRIMARY KEY,
+      user_id BIGINT NOT NULL,
+      opus_id INTEGER NOT NULL,
+      level TEXT,
+      lang TEXT,
+      part TEXT,
+      correct INTEGER,
+      incorrect INTEGER,
+      FOREIGN KEY (opus_id) REFERENCES pl_examples(id),
+      FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
     )`
 }
 
@@ -108,6 +121,7 @@ module.exports.updateTables = function () {
     .then(() => checkAndCreateTable('pl_words'))
     .then(() => checkAndCreateTable('pl_tasks'))
     .then(() => checkAndCreateTable('pl_t_results'))
+    .then(() => checkAndCreateTable('pl_o_results'))
     .then(() => {
       console.log('All tables created or already exist.')
       if (process.env.LOAD_BASE_DICT === 'true') {

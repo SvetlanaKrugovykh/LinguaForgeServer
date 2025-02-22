@@ -122,3 +122,13 @@ module.exports.userDataMemorize = async function (request, reply) {
   }
 }
 
+module.exports.userOpusSave = async function (request, reply) {
+  try {
+    const body = request.body
+    const dataArray = await opusService.saveUserOpusSet(body)
+
+    return reply.send(dataArray)
+  } catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}

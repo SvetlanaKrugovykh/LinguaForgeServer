@@ -1,7 +1,7 @@
 
 const { Pool } = require('pg')
 const dotenv = require('dotenv')
-const g_translateText = require('./translateService').g_translateText
+const db = require('../db/requests')
 
 dotenv.config()
 const pool = new Pool({
@@ -87,5 +87,16 @@ module.exports.updateOpus = async function (word, ruWord, ukWord, enWord, subjec
     }
   } else {
     await pool.query('INSERT INTO pl_words (word, ru, uk, en, subject, example) VALUES ($1, $2, $3, $4, $5, $6)', [word, ruWord, ukWord, enWord, subjectId, exampleId])
+  }
+}
+
+module.exports.saveUserOpusSet = async function (body) {
+  try {
+    const data = body.query
+    const result = await db.setUserOpusData(data)
+    return result
+  } catch (error) {
+    console.error('Error setting user data:', error)
+    return null
   }
 }
