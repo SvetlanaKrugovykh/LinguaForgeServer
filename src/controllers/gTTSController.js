@@ -1,11 +1,24 @@
 const gTTsService = require('../services/gTTsService')
 const analizeService = require('../services/analize')
 const testsService = require('../services/testsService')
+const usersService = require('../services/usersService')
 const { mergeMP3Files } = require('../services/mergeService')
 const fs = require('fs')
 const path = require('path')
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
+
+
+module.exports.userSettingsSave = async function (request, reply) {
+  try {
+    const body = request.body
+    const dataArray = await usersService.saveUserSet(body)
+
+    return reply.send(dataArray)
+  } catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}
 
 module.exports.gTTs = async function (request, reply) {
   try {
@@ -83,3 +96,4 @@ module.exports.userDataMemorize = async function (request, reply) {
     reply.status(500).send({ error: 'Error processing request', details: error.message })
   }
 }
+

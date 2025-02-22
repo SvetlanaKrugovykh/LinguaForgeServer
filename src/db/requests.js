@@ -11,6 +11,28 @@ const pool = new Pool({
   port: process.env.LANG_DB_PORT,
 })
 
+module.exports.saveUserSet = async function (body) {
+  try {
+    const { user_id, first_name, last_name, username, language_code } = body
+    const userCheck = await pool.query('SELECT * FROM tg_users WHERE user_id = $1', [user_id])
+
+    if (userCheck.rows.length > 0) {
+      await pool.query(
+        'UPDATE tg_users SET first_name = $1, last_name = $2, username = $3, language_code = $4 WHERE user_id = $5',
+        [first_name, last_name, username, language_code, user_id]
+      )
+    } else {
+      await pool.query(
+        'INSERT INTO tg_users (user_id, first_name, last_name, username, language_code) VALUES ($1, $2, $3, $4, $5)',
+        [user_id, first_name, last_name, username, language_code]
+      )
+    }
+  } catch (error) {
+    console.error('Error saving user set:', error)
+    return null
+  }
+}
+
 module.exports.getWords = async function (text) {
   let { rows } = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text.trim()])
 
@@ -53,12 +75,12 @@ module.exports.getOpuses = async function (topic, _level, _source, size) {
   }
 
   if (rows.length > 0) {
-    const exampleId = rows[0].id;
-    const wordsResult = await pool.query('SELECT * FROM pl_words WHERE example = $1 LIMIT 100', [exampleId]);
-    return { example: rows[0], words: wordsResult.rows };
+    const exampleId = rows[0].id
+    const wordsResult = await pool.query('SELECT * FROM pl_words WHERE example = $1 LIMIT 100', [exampleId])
+    return { example: rows[0], words: wordsResult.rows }
   }
 
-  return { example: null, words: [] };
+  return { example: null, words: [] }
 }
 
 module.exports.updateWord = async function (row) {
@@ -73,7 +95,7 @@ module.exports.updateWord = async function (row) {
 
     await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3 WHERE id = $4', [en, ru, uk, row.id])
 
-    const result = await pool.query('SELECT * FROM pl_words WHERE id = $1', [row.id]);
+    const result = await pool.query('SELECT * FROM pl_words WHERE id = $1', [row.id])
     if (!result.rows || result.rows.length === 0) {
       return null
     }
