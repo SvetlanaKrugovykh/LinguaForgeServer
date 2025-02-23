@@ -1,6 +1,11 @@
 const gTTSController = require('../controllers/gTTSController')
 const isAuthorizedGuard = require('../guards/isAuthorizedGuard')
 const dataTTSSchema = require('../schemas/dataTTSSchema')
+const coToJestSchema = require('../schemas/coToJestSchema')
+const addNewTestOpusSchema = require('../schemas/addNewTestOpusSchema')
+const userSetSchema = require('../schemas/userSetSchema')
+const userDataMemorizeSchema = require('../schemas/userDataMemorizeSchema')
+const getTestOpusSchema = require('../schemas/getTestOpusSchema')
 
 module.exports = (fastify, _opts, done) => {
 
@@ -8,9 +13,9 @@ module.exports = (fastify, _opts, done) => {
     method: 'POST',
     url: '/g-tts',
     handler: gTTSController.gTTs,
-    // preHandler: [
-    //   isAuthorizedGuard
-    // ],
+    preHandler: [
+      isAuthorizedGuard
+    ],
     schema: dataTTSSchema
   })
 
@@ -18,10 +23,10 @@ module.exports = (fastify, _opts, done) => {
     method: 'POST',
     url: '/co-to-jest',
     handler: gTTSController.coToJest,
-    // preHandler: [
-    //   isAuthorizedGuard
-    // ],
-    // schema: dataExchangeSchema
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: coToJestSchema
   })
 
 
@@ -29,70 +34,70 @@ module.exports = (fastify, _opts, done) => {
     method: 'POST',
     url: '/get-test',
     handler: gTTSController.getTest,
-    // preHandler: [
-    //   isAuthorizedGuard
-    // ],
-    // schema: dataExchangeSchema
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: getTestOpusSchema
   })
 
   fastify.route({
     method: 'POST',
     url: '/get-opus',
     handler: gTTSController.getOpus,
-    // preHandler: [
-    //   isAuthorizedGuard
-    // ],
-    // schema: dataExchangeSchema
-  })
-
-  fastify.route({
-    method: 'POST',
-    url: '/user-opus-save',
-    handler: gTTSController.userOpusSave,
-    // preHandler: [
-    //   isAuthorizedGuard
-    // ],
-    // schema: dataExchangeSchema
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: getTestOpusSchema
   })
 
   fastify.route({
     method: 'POST',
     url: '/user-set',
     handler: gTTSController.userSettingsSave,
-    // preHandler: [
-    //   isAuthorizedGuard
-    // ],
-    // schema: dataExchangeSchema
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: userSetSchema
   })
 
   fastify.route({
     method: 'POST',
     url: '/user-data-memorize',
     handler: gTTSController.userDataMemorize,
-    // preHandler: [
-    //   isAuthorizedGuard
-    // ],
-    // schema: dataExchangeSchema
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: userDataMemorizeSchema
+  })
+
+  fastify.route({
+    method: 'POST',
+    url: '/user-opus-save',
+    handler: gTTSController.userOpusSave,
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: userDataMemorizeSchema
   })
 
   fastify.route({
     method: 'POST',
     url: '/add-new-test',
     handler: gTTSController.addNewTest,
-    // preHandler: [
-    //   isAuthorizedGuard
-    // ],
-    // schema: dataExchangeSchema
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: addNewTestOpusSchema
   })
 
   fastify.route({
     method: 'POST',
     url: '/add-new-opus',
     handler: gTTSController.addNewOpus,
-    // preHandler: [
-    //   isAuthorizedGuard
-    // ],
-    // schema: dataExchangeSchema
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: addNewTestOpusSchema
   })
   done()
 }
