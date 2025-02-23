@@ -51,23 +51,23 @@ module.exports.getWords = async function (text) {
   return rows
 }
 
-module.exports.getTasks = async function (topic, level, source, userId) {
+module.exports.getTasks = async function (topic, level, _source, userId) {
   let { rows } = await pool.query(`
     SELECT * FROM pl_tasks 
-    WHERE topic = $1 AND level = $2 AND source = $3 
-    AND id NOT IN (SELECT task_id FROM pl_t_results WHERE user_id = $4)
+    WHERE topic = $1 AND level = $2  
+    AND id NOT IN (SELECT task_id FROM pl_t_results WHERE user_id = $3)
     ORDER BY RANDOM() 
     LIMIT 1
-  `, [topic, level, source, userId])
+  `, [topic, level, userId])
 
   if (rows.length === 0) {
     rows = await pool.query(`
       SELECT * FROM pl_tasks 
-      WHERE topic = $1 AND level = $2 AND source = $3 
-      AND id IN (SELECT task_id FROM pl_t_results WHERE user_id = $4 AND correct < incorrect)
+      WHERE topic = $1 AND level = $2  
+      AND id IN (SELECT task_id FROM pl_t_results WHERE user_id = $3 AND correct < incorrect)
       ORDER BY RANDOM() 
       LIMIT 1
-    `, [topic, level, source, userId]).rows
+    `, [topic, level, userId]).rows
   }
 
   return rows
