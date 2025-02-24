@@ -39,6 +39,37 @@ module.exports.addNewTest = async function (entry) {
   await pool.query('INSERT INTO pl_tasks (topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation])
 }
 
+module.exports.addNewTest = async function (entry) {
+  const { topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation, delete: deleteFlag } = entry
+
+  try {
+    const { rows } = await pool.query('SELECT * FROM pl_tasks WHERE topic = $1 AND text = $2', [topic, text])
+
+    if (rows.length > 0) {
+      if (deleteFlag === 'delete') {
+        await pool.query('DELETE FROM pl_tasks WHERE topic = $1 AND text = $2', [topic, text])
+        return 'deleted'
+      } else {
+        await pool.query(
+          'UPDATE pl_tasks SET level = $1, source = $2, year = $3, type = $4, value = $5, total_topic = $6, task_number = $7, tasks_count = $8, options = $9, correct = $10, explanation = $11 WHERE topic = $12 AND text = $13',
+          [level, source, year, type, value, total_topic, task_number, tasks_count, options, correct, explanation, topic, text]
+        )
+        return 'updated'
+      }
+    }
+
+    await pool.query(
+      'INSERT INTO pl_tasks (topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
+      [topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation]
+    )
+    return 'added'
+
+  } catch (error) {
+    console.error('Error in addNewTest:', error)
+    return null
+  }
+}
+
 module.exports.getWords = async function (text) {
   let { rows } = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text.trim()])
 
@@ -87,7 +118,7 @@ module.exports.getOpuses = async function (topic, _level, _source, size, userId)
       ORDER BY RANDOM()
       LIMIT 1
     `, [topic, userId])
-    rows = result.rows;
+    rows = result.rows
   } else {
     const result = await pool.query(`
       SELECT pl_examples.*, pl_subjects.subject

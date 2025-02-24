@@ -35,7 +35,6 @@ module.exports.addNewOpus = async function (body) {
   }
 }
 
-
 async function processWords(wordsArray, ruArray, ukArray, enArray, subjectId, exampleId) {
   for (let i = 0; i < wordsArray.length; i++) {
     const word = wordsArray[i]
