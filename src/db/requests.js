@@ -173,9 +173,9 @@ module.exports.getOpuses = async function (topic, _level, _source, size, userId)
 module.exports.updateWord = async function (row) {
   try {
     const translations = await Promise.all([
-      row.en ? row.en : g_translateText(row.word, 'pl', 'en'),
-      row.ru ? row.ru : g_translateText(row.word, 'pl', 'ru'),
-      row.uk ? row.uk : g_translateText(row.word, 'pl', 'uk')
+      row.en ? row.en : await g_translateText(row.word, 'pl', 'en'),
+      row.ru ? row.ru : await g_translateText(row.word, 'pl', 'ru'),
+      row.uk ? row.uk : await g_translateText(row.word, 'pl', 'uk')
     ])
 
     const [en, ru, uk] = translations
