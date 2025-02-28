@@ -92,13 +92,14 @@ module.exports.getTasks = async function (topic, level, _source, userId) {
   `, [topic, level, userId])
 
   if (rows.length === 0) {
-    rows = await pool.query(`
+    const result = await pool.query(`
       SELECT * FROM pl_tasks 
       WHERE topic = $1 AND level = $2  
-      AND id IN (SELECT task_id FROM pl_t_results WHERE user_id = $3 AND correct < incorrect)
+      AND id IN (SELECT task_id FROM pl_t_results WHERE user_id = $3 AND correct <= incorrect)
       ORDER BY RANDOM() 
       LIMIT 1
-    `, [topic, level, userId]).rows
+    `, [topic, level, userId])
+    rows = result.rows
   }
 
   return rows
