@@ -59,8 +59,8 @@ module.exports.addNewTest = async function (entry) {
         return 'deleted'
       } else {
         await pool.query(
-          'UPDATE pl_tasks SET level = $1, source = $2, year = $3, type = $4, value = $5, total_topic = $6, task_number = $7, tasks_count = $8, options = $9, correct = $10, explanation = $11 WHERE id = $12',
-          [level, source, year, type, value, total_topic, task_number, tasks_count, options, correct, explanation, taskId]
+          'UPDATE pl_tasks SET level = $1, source = $2, year = $3, type = $4, value = $5, total_topic = $6, task_number = $7, tasks_count = $8, text = $9, options = $10, correct = $11, explanation = $12 WHERE id = $13',
+          [level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation, taskId]
         )
         return 'updated'
       }
