@@ -9,6 +9,10 @@ module.exports.cleanTestsService = async function () {
       const result = await db.getTasks(null, null, null, null, i)
       const checkData = await testS.checkTestQuality(result[0])
       console.log(`Test for task_id${i}:`)
+      if (checkData === "!!!TEXT not filled!!!") {
+        console.log('!!!TEXT not filled!!!')
+        continue
+      }
       if (checkData?.differences) {
         console.log('differences', checkData.differences)
         console.log('correct', checkData.correct)

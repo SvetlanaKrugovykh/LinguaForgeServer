@@ -117,7 +117,7 @@ module.exports.checkTestQuality = async function (data) {
 }
 
 
-async function executeResult(result, lang) {
+async function executeResult(result, _lang) {
 
   try {
     const checkData = {}
@@ -129,6 +129,7 @@ async function executeResult(result, lang) {
     }
 
     const options = optionsWithPrawdaFalsz.split(/(?=\s[a-z]\))/).map(option => `${option.trim()}`).join('\n').replace('a)', '\na)')
+    if (!result?.text) return "!!!TEXT not filled!!!"
     const formattedText = result.text.replace(/(\d{1,3}\.)/g, '\n\n$1')
 
     const updatedOptions = options.replace(/(\d{1,3}\.)/g, '\n\n$1')
