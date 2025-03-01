@@ -40,19 +40,27 @@ module.exports.addNewTest = async function (entry) {
 }
 
 module.exports.addNewTest = async function (entry) {
-  const { topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation, delete: deleteFlag } = entry
+  const { topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation, delete: deleteFlag, taskId } = entry
 
   try {
-    const { rows } = await pool.query('SELECT * FROM pl_tasks WHERE topic = $1 AND text = $2', [topic, text])
+    let rows
+    if (taskId) {
+      const result = await pool.query('SELECT * FROM pl_tasks WHERE id = $1', [taskId])
+      rows = result.rows
+    } else {
+      const result = await pool.query('SELECT * FROM pl_tasks WHERE topic = $1 AND text = $2', [topic, text])
+      rows = result.rows
+    }
 
     if (rows.length > 0) {
+      const taskId = rows[0].id
       if (deleteFlag === 'delete') {
-        await pool.query('DELETE FROM pl_tasks WHERE topic = $1 AND text = $2', [topic, text])
+        await deleteTaskAndRelatedResults(taskId)
         return 'deleted'
       } else {
         await pool.query(
-          'UPDATE pl_tasks SET level = $1, source = $2, year = $3, type = $4, value = $5, total_topic = $6, task_number = $7, tasks_count = $8, options = $9, correct = $10, explanation = $11 WHERE topic = $12 AND text = $13',
-          [level, source, year, type, value, total_topic, task_number, tasks_count, options, correct, explanation, topic, text]
+          'UPDATE pl_tasks SET level = $1, source = $2, year = $3, type = $4, value = $5, total_topic = $6, task_number = $7, tasks_count = $8, options = $9, correct = $10, explanation = $11 WHERE id = $12',
+          [level, source, year, type, value, total_topic, task_number, tasks_count, options, correct, explanation, taskId]
         )
         return 'updated'
       }
@@ -70,6 +78,24 @@ module.exports.addNewTest = async function (entry) {
   }
 }
 
+async function deleteTaskAndRelatedResults(taskId) {
+  try {
+    await pool.query('DELETE FROM pl_t_results WHERE task_id = $1', [taskId])
+    await pool.query('DELETE FROM pl_tasks WHERE id = $1', [taskId])
+  } catch (error) {
+    console.error('Error deleting task and related results:', error)
+  }
+}
+
+async function deleteTaskAndRelatedResults(taskId) {
+  try {
+    await pool.query('DELETE FROM pl_t_results WHERE task_id = $1', [taskId])
+    await pool.query('DELETE FROM pl_tasks WHERE id = $1', [taskId])
+  } catch (error) {
+    console.error('Error deleting task and related results:', error)
+  }
+}
+
 module.exports.getWords = async function (text) {
   let { rows } = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text.trim()])
 
@@ -82,7 +108,12 @@ module.exports.getWords = async function (text) {
   return rows
 }
 
-module.exports.getTasks = async function (topic, level, _source, userId) {
+module.exports.getTasks = async function (topic, level, _source, userId, taskId) {
+  if (taskId) {
+    const { rows } = await pool.query('SELECT * FROM pl_tasks WHERE id = $1', [taskId])
+    return rows
+  }
+
   let { rows } = await pool.query(`
     SELECT * FROM pl_tasks 
     WHERE topic = $1 AND level = $2  
@@ -239,4 +270,7 @@ module.exports.setUserOpusData = async function (data) {
   }
 }
 
-
+module.exports.getMaxTestId = async function () {
+  const { rows } = await pool.query('SELECT MAX(id) FROM pl_tasks')
+  return rows[0].max
+}
