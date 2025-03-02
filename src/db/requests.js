@@ -279,3 +279,27 @@ module.exports.getMaxTestId = async function () {
   const { rows } = await pool.query('SELECT MAX(id) FROM pl_tasks')
   return rows[0].max
 }
+
+module.exports.getMaxWordId = async function () {
+  const { rows } = await pool.query('SELECT MAX(id) FROM pl_words')
+  return rows[0].max
+}
+
+module.exports.get1Word = async function (id) {
+  const result = await pool.query('SELECT * FROM pl_words WHERE id = $1', [id])
+  return result.rows[0]
+}
+
+module.exports.cleanWord = async function (i, translations) {
+  try {
+
+    const { en, ru, uk } = translations
+
+    const { rows } = await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3 WHERE id = $4', [en, ru, uk, i])
+    return rows
+
+  } catch (error) {
+    console.error('Error updating word:', error)
+    return null
+  }
+}
