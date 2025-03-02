@@ -1,10 +1,9 @@
 const db = require('../db/requests')
 const trS = require('./translateService')
 const { Translate } = require('@google-cloud/translate').v2
-const { getCredentials } = require('../guards/getCredentials')
 require('dotenv').config()
 
-module.exports.cleanWordTranslates = async function () {
+module.exports.cleanWordTranslates = async function (credentials) {
   try {
     const maxTestId = await db.getMaxWordId()
 
@@ -15,8 +14,8 @@ module.exports.cleanWordTranslates = async function () {
 
       const translations = {}
       translations.en = await trS.translateLWord(row.word, 'pl', 'en')
-      translations.ru = await g1_translateText(translations.en, 'en', 'ru')
-      translations.uk = await g1_translateText(translations.en, 'en', 'uk')
+      translations.ru = await g1_translateText(translations.en, 'en', 'ru', credentials)
+      translations.uk = await g1_translateText(translations.en, 'en', 'uk', credentials)
       await db.cleanWord(i, translations)
       console.log(row.word, translations)
     }
@@ -27,9 +26,8 @@ module.exports.cleanWordTranslates = async function () {
   }
 }
 
-async function g1_translateText(text, sourceLanguage, targetLanguage) {
+async function g1_translateText(text, sourceLanguage, targetLanguage, CREDENTIALS) {
   try {
-    const CREDENTIALS = getCredentials()
     const translate = new Translate({ credentials: CREDENTIALS, projectId: CREDENTIALS.project_id })
     const [translation] = await translate.translate(text, {
       from: sourceLanguage,
