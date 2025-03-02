@@ -33,7 +33,7 @@ module.exports.translateWord = async function (word, sourceLanguage, targetLangu
 
 module.exports.translateLWord = async function (word, sourceLanguage, targetLanguage) {
   try {
-    const response = await axios.post(process.env.TRANSLATOR, {
+    const response = await axios.post(process.env.TRANSLATOR_URL, {
       text: word,
       direction: `${sourceLanguage}_${targetLanguage}`,
     })
