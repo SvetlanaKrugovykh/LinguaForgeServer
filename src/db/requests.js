@@ -38,6 +38,7 @@ module.exports.addNewTest = async function (entry) {
 
   await pool.query('INSERT INTO pl_tasks (topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation])
 }
+
 module.exports.addNewTest = async function (entry) {
   let { topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation, delete: deleteFlag, taskId } = entry
 
@@ -76,27 +77,6 @@ module.exports.addNewTest = async function (entry) {
   } catch (error) {
     console.error('Error in addNewTest:', error)
     return null
-  }
-}
-
-await pool.query(
-  'INSERT INTO pl_tasks (topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
-  [topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation]
-)
-return 'added'
-
-  } catch (error) {
-  console.error('Error in addNewTest:', error)
-  return null
-}
-}
-
-async function deleteTaskAndRelatedResults(taskId) {
-  try {
-    await pool.query('DELETE FROM pl_t_results WHERE task_id = $1', [taskId])
-    await pool.query('DELETE FROM pl_tasks WHERE id = $1', [taskId])
-  } catch (error) {
-    console.error('Error deleting task and related results:', error)
   }
 }
 
