@@ -38,11 +38,12 @@ module.exports.addNewTest = async function (entry) {
 
   await pool.query('INSERT INTO pl_tasks (topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation])
 }
-
 module.exports.addNewTest = async function (entry) {
-  const { topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation, delete: deleteFlag, taskId } = entry
+  let { topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation, delete: deleteFlag, taskId } = entry
 
   try {
+    text = text.replace(/[()]/g, '_')
+
     let rows
     if (taskId) {
       const result = await pool.query('SELECT * FROM pl_tasks WHERE id = $1', [taskId])
@@ -76,6 +77,18 @@ module.exports.addNewTest = async function (entry) {
     console.error('Error in addNewTest:', error)
     return null
   }
+}
+
+await pool.query(
+  'INSERT INTO pl_tasks (topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
+  [topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation]
+)
+return 'added'
+
+  } catch (error) {
+  console.error('Error in addNewTest:', error)
+  return null
+}
 }
 
 async function deleteTaskAndRelatedResults(taskId) {
