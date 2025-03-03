@@ -29,6 +29,15 @@ module.exports = (fastify, _opts, done) => {
     schema: coToJestSchema
   })
 
+  fastify.route({
+    method: 'POST',
+    url: '/get-subjects',
+    handler: gTTSController.getSubjects,
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: coToJestSchema
+  })
 
   fastify.route({
     method: 'POST',

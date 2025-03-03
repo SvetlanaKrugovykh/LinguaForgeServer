@@ -11,6 +11,15 @@ module.exports.addNewTest = async function (body) {
     return null
   }
 }
+module.exports.getSubjects = async function () {
+  try {
+    const result = await db.getSubjects()
+    return result
+  } catch (error) {
+    console.error('Error getting subjects:', error)
+    return null
+  }
+}
 
 module.exports.getTestData = async function (body) {
   try {

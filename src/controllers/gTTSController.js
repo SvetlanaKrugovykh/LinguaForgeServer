@@ -42,8 +42,14 @@ module.exports.addNewOpus = async function (request, reply) {
     reply.status(500).send({ error: 'Error processing request', details: error.message })
   }
 }
-
-
+module.exports.getSubjects = async function (request, reply) {
+  try {
+    const dataArray = await testsService.getSubjects()
+    return reply.send(dataArray)
+  } catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}
 
 module.exports.gTTs = async function (request, reply) {
   try {
