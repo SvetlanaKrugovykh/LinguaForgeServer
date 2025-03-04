@@ -72,11 +72,12 @@ module.exports.getOpusData = async function (body) {
     const level = 'B1-B2'
     let topic = 'Pisanie'
     const size = data.size
+    const subject = data?.subject
 
     if (data.part4_6 === '5') topic = 'Mówienie'
     if (data.part4_6 === '6') topic = 'Słownictwo'
 
-    const result = await db.getOpuses(topic, level, source, size, userId, opusId)
+    const result = await db.getOpuses(topic, level, source, size, userId, opusId, subject)
     if (!result || result.length === 0) return null
 
     return result

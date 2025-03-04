@@ -41,7 +41,14 @@ module.exports.addNewTest = async function (entry) {
 
 module.exports.getSubjects = async function () {
   try {
-    const { rows } = await pool.query('SELECT subject FROM pl_subjects ORDER BY subject ASC')
+    const { rows } = await pool.query(`
+      SELECT DISTINCT pl_subjects.subject 
+      FROM pl_subjects 
+      JOIN pl_examples ON pl_subjects.id = pl_examples.subject 
+      WHERE pl_examples.topic LIKE 'Słownictwo' 
+      ORDER BY pl_subjects.subject ASC 
+      LIMIT 50
+    `)
     return rows
   } catch (error) {
     console.error('Error getting subjects:', error)
@@ -139,36 +146,21 @@ module.exports.getTasks = async function (topic, level, _source, userId, taskId)
   return rows
 }
 
-module.exports.getOpuses = async function (topic, _level, _source, size, userId, opusId) {
+module.exports.getOpuses = async function (topic, _level, _source, size, userId, opusId, subject) {
   let rows = []
 
   if (opusId) {
-    const result = await pool.query('SELECT pl_examples.*, pl_subjects.subject FROM pl_examples LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id WHERE pl_examples.id = $1', [opusId])
+    const result = await pool.query(getRequestText4opus('opusId'), [opusId])
+    rows = result.rows
+  } else if (subject) {
+    const result = await pool.query(getRequestText4opus('subject'), [`${subject}%`])
     rows = result.rows
   } else {
     if (size === '1') {
-      const result = await pool.query(`
-        SELECT pl_examples.*, pl_subjects.subject
-        FROM pl_examples
-        LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id
-        WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) <= 650
-        AND topic = $1
-        AND pl_examples.id NOT IN (SELECT opus_id FROM pl_o_results WHERE user_id = $2)
-        ORDER BY RANDOM()
-        LIMIT 1
-      `, [topic, userId])
+      const result = await pool.query(getRequestText4opus('size1'), [topic, userId])
       rows = result.rows
     } else {
-      const result = await pool.query(`
-        SELECT pl_examples.*, pl_subjects.subject
-        FROM pl_examples
-        LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id
-        WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) > 650
-        AND topic = $1
-        AND pl_examples.id NOT IN (SELECT opus_id FROM pl_o_results WHERE user_id = $2)
-        ORDER BY RANDOM()
-        LIMIT 1
-      `, [topic, userId])
+      const result = await pool.query(getRequestText4opus('size2'), [topic, userId])
       rows = result.rows
     }
 
@@ -208,6 +200,38 @@ module.exports.getOpuses = async function (topic, _level, _source, size, userId,
   }
 
   return { example: null, words: [] }
+}
+
+function getRequestText4opus(caseData) {
+
+  switch (caseData) {
+    case 'opusId':
+      return 'SELECT pl_examples.*, pl_subjects.subject FROM pl_examples LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id WHERE pl_examples.id = $1'
+    case 'subject':
+      return 'SELECT pl_examples.*, pl_subjects.subject FROM pl_examples LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id WHERE pl_subjects.subject LIKE $1'
+    case 'size1':
+      return `
+        SELECT pl_examples.*, pl_subjects.subject
+        FROM pl_examples
+        LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id
+        WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) <= 650
+        AND topic = $1
+        AND pl_examples.id NOT IN (SELECT opus_id FROM pl_o_results WHERE user_id = $2)
+        ORDER BY RANDOM()
+        LIMIT 1
+      `
+    case 'size2':
+      return `
+        SELECT pl_examples.*, pl_subjects.subject
+        FROM pl_examples
+        LEFT JOIN pl_subjects ON pl_examples.subject = pl_subjects.id
+        WHERE pl_examples.example IS NOT NULL AND LENGTH(pl_examples.example) > 650
+        AND topic = $1
+        AND pl_examples.id NOT IN (SELECT opus_id FROM pl_o_results WHERE user_id = $2)
+        ORDER BY RANDOM()
+        LIMIT 1
+      `
+  }
 }
 
 module.exports.updateWord = async function (row) {

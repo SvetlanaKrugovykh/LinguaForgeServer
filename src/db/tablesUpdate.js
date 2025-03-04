@@ -109,7 +109,18 @@ const tableQueries = {
       incorrect INTEGER,
       FOREIGN KEY (opus_id) REFERENCES pl_examples(id),
       FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
-    )`
+    )`,
+  'pl_w_results': `
+    CREATE TABLE pl_w_results (
+      id SERIAL PRIMARY KEY,
+      user_id BIGINT NOT NULL,
+      word_id INTEGER NOT NULL,
+      correct INTEGER,
+      incorrect INTEGER,
+      finished BOOLEAN,
+      FOREIGN KEY (word_id) REFERENCES pl_words(id),
+      FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
+    )`,
 }
 
 
@@ -122,6 +133,7 @@ module.exports.updateTables = function () {
     .then(() => checkAndCreateTable('pl_tasks'))
     .then(() => checkAndCreateTable('pl_t_results'))
     .then(() => checkAndCreateTable('pl_o_results'))
+    .then(() => checkAndCreateTable('pl_w_results'))
     .then(() => {
       console.log('All tables created or already exist.')
       if (process.env.LOAD_BASE_DICT === 'true') {
