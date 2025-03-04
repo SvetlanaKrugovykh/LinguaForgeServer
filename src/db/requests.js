@@ -148,6 +148,7 @@ module.exports.getTasks = async function (topic, level, _source, userId, taskId)
 
 module.exports.getOpuses = async function (topic, _level, _source, size, userId, opusId, subject) {
   let rows = []
+  let wordsResult = []
 
   if (opusId) {
     const result = await pool.query(getRequestText4opus('opusId'), [opusId])
@@ -195,11 +196,27 @@ module.exports.getOpuses = async function (topic, _level, _source, size, userId,
 
   if (rows.length > 0) {
     const exampleId = rows[0].id
-    const wordsResult = await pool.query('SELECT * FROM pl_words WHERE example = $1 LIMIT 100', [exampleId])
+    if (subject) {
+      wordsResult = await pool.query(getRequestSubjWords(), [exampleId, userId])
+    } else {
+      wordsResult = await pool.query('SELECT * FROM pl_words WHERE example = $1 LIMIT 100', [exampleId])
+    }
     return { example: rows[0], words: wordsResult.rows }
   }
 
   return { example: null, words: [] }
+}
+
+function getRequestSubjWords() {
+  return `
+    SELECT pl_words.* 
+    FROM pl_words 
+    LEFT JOIN pl_w_results ON pl_words.id = pl_w_results.word_id 
+    WHERE pl_words.example = $1 
+    AND (pl_w_results.user_id IS NULL OR pl_w_results.finished = false OR pl_w_results.user_id != $2)
+    ORDER BY RANDOM()
+    LIMIT 1
+  `
 }
 
 function getRequestText4opus(caseData) {

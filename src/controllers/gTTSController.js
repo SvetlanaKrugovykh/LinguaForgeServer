@@ -86,8 +86,8 @@ module.exports.gTTs = async function (request, reply) {
 
 module.exports.coToJest = async function (request, reply) {
   try {
-    const { text } = request.body
-    const dataArray = await analizeService.checkText(text)
+    const { text, userId } = request.body
+    const dataArray = await analizeService.checkText(text, userId)
 
     return reply.send(dataArray)
 
