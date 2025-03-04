@@ -319,6 +319,27 @@ module.exports.setUserOpusData = async function (data) {
   }
 }
 
+module.exports.setUserWord = async function (data) {
+  try {
+    const { currentOpus, userId } = data
+    const wordId = currentOpus.id
+
+    const { rows } = await pool.query('SELECT * FROM pl_w_results WHERE user_id = $1 AND word_id = $2', [userId, wordId])
+
+    if (rows.length > 0) {
+      if (success) {
+        await pool.query('UPDATE pl_w_results SET correct = correct + 1, finished = true WHERE user_id = $1 AND word_id = $2', [userId, wordId])
+      } else {
+        await pool.query('UPDATE pl_w_results SET incorrect = incorrect + 1, finished = true WHERE user_id = $1 AND word_id = $2', [userId, wordId])
+      }
+    } else {
+      await pool.query('INSERT INTO pl_w_results (user_id, word_id, finished) VALUES ($1, $2, $3)', [userId, wordId, true])
+    }
+  } catch (error) {
+    console.error('Error setUserWord:', error)
+  }
+}
+
 module.exports.getMaxTestId = async function () {
   const { rows } = await pool.query('SELECT MAX(id) FROM pl_tasks')
   return rows[0].max

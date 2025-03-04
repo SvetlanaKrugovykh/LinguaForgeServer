@@ -138,3 +138,14 @@ module.exports.userOpusSave = async function (request, reply) {
     reply.status(500).send({ error: 'Error processing request', details: error.message })
   }
 }
+
+module.exports.userWordSave = async function (request, reply) {
+  try {
+    const body = request.body
+    const dataArray = await opusService.saveUserWord(body)
+
+    return reply.send(dataArray)
+  } catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}

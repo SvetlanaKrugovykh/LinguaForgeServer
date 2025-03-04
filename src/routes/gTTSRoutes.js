@@ -91,6 +91,17 @@ module.exports = (fastify, _opts, done) => {
 
   fastify.route({
     method: 'POST',
+    url: '/user-word-save',
+    handler: gTTSController.userWordSave,
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: userDataMemorizeSchema
+  })
+
+
+  fastify.route({
+    method: 'POST',
     url: '/add-new-test',
     handler: gTTSController.addNewTest,
     preHandler: [

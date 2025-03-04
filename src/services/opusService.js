@@ -99,3 +99,15 @@ module.exports.saveUserOpusSet = async function (body) {
     return null
   }
 }
+
+
+module.exports.saveUserWord = async function (body) {
+  try {
+    const data = body.query
+    const result = await db.setUserWord(data)
+    return result
+  } catch (error) {
+    console.error('Error setting user word:', error)
+    return null
+  }
+}
