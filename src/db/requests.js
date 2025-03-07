@@ -108,9 +108,16 @@ async function deleteTaskAndRelatedResults(taskId) {
 
 module.exports.getWords = async function (text) {
   let { rows } = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text.trim()])
+  let likeText
 
   if (!rows || rows.length === 0) {
-    const likeText = `%${text.trim()}%`
+    likeText = `%, ${text.trim()}%`
+    const result = await pool.query('SELECT * FROM pl_words WHERE word_forms LIKE $1', [likeText])
+    rows = result.rows
+  }
+
+  if (!rows || rows.length === 0) {
+    likeText = `%${text.trim()}%`
     const result = await pool.query('SELECT * FROM pl_words WHERE word_forms LIKE $1', [likeText])
     rows = result.rows
   }
