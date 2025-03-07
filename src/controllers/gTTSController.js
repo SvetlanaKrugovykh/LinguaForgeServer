@@ -55,11 +55,32 @@ module.exports.gTTs = async function (request, reply) {
   try {
     const { query } = request.body
     const sentences = query.text.split(/[\.\?]/).map(sentence => sentence.trim()).filter(sentence => sentence.length > 0)
-    const queries = sentences.map(sentence => ({
+
+    const splitSentence = (sentence, maxLength) => {
+      const parts = [];
+      let currentPart = ''
+
+      sentence.split(' ').forEach(word => {
+        if ((currentPart + ' ' + word).trim().length <= maxLength) {
+          currentPart = (currentPart + ' ' + word).trim();
+        } else {
+          parts.push(currentPart);
+          currentPart = word;
+        }
+      })
+
+      if (currentPart) {
+        parts.push(currentPart);
+      }
+
+      return parts
+    }
+
+    const queries = sentences.flatMap(sentence => splitSentence(sentence, 200).map(part => ({
       userId: query.userId,
-      text: sentence,
+      text: part,
       lang: query.lang
-    }))
+    })))
 
     const results = await gTTsService.gTTs(queries)
     const fileNamesArray = results.map(result => result.filePath)
