@@ -118,6 +118,17 @@ module.exports.coToJest = async function (request, reply) {
   }
 }
 
+module.exports.wordEdit = async function (request, reply) {
+  try {
+    const { data } = request.body
+    const dataArray = await analizeService.wordEditor(data)
+
+    return reply.send(dataArray)
+  } catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}
+
 module.exports.getTest = async function (request, reply) {
   try {
     const dataArray = await testsService.getTestData(request.body)

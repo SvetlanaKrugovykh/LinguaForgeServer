@@ -258,6 +258,9 @@ function getRequestText4opus(caseData) {
   }
 }
 
+module.exports.manualUpdateWord = async function (data) {
+}
+
 module.exports.updateWord = async function (row) {
   try {
     const translations = await Promise.all([

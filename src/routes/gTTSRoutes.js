@@ -31,6 +31,16 @@ module.exports = (fastify, _opts, done) => {
 
   fastify.route({
     method: 'POST',
+    url: '/word-edit',
+    handler: gTTSController.wordEdit,
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: coToJestSchema
+  })
+
+  fastify.route({
+    method: 'POST',
     url: '/get-subjects',
     handler: gTTSController.getSubjects,
     preHandler: [

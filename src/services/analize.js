@@ -26,6 +26,17 @@ module.exports.checkText = async function (text, userId) {
   return null
 }
 
+module.exports.wordEditor = async function (data) {
+  try {
+    const dataArray = await db.manualUpdateWord(data)
+
+    return dataArray
+  } catch (error) {
+    console.log('Error updating word:', error)
+    return null
+  }
+}
+
 async function checkSubjectWord(text, userId) {
   try {
     const subject = text.replace('Subject:', '').trim()
