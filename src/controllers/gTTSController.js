@@ -120,7 +120,7 @@ module.exports.coToJest = async function (request, reply) {
 
 module.exports.wordEdit = async function (request, reply) {
   try {
-    const { data } = request.body
+    const data = request.body
     const dataArray = await analizeService.wordEditor(data)
 
     return reply.send(dataArray)

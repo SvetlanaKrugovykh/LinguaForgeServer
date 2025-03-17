@@ -259,6 +259,27 @@ function getRequestText4opus(caseData) {
 }
 
 module.exports.manualUpdateWord = async function (data) {
+  try {
+    const { text, en, ru, uk, part_of_speech } = data
+
+    const searchResult = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text])
+
+    if (searchResult.rows.length > 0) {
+      const wordId = searchResult.rows[0].id
+      await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3 WHERE id = $4', [en, ru, uk, wordId])
+    } else {
+      await pool.query('INSERT INTO pl_words (word, en, ru, uk,  part_of_speech) VALUES ($1, $2, $3, $4)', [text, en, ru, uk, part_of_speech])
+    }
+
+    const result = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text])
+    if (!result.rows || result.rows.length === 0) {
+      return null
+    }
+    return result.rows
+  } catch (error) {
+    console.error('Error updating word:', error)
+    return null
+  }
 }
 
 module.exports.updateWord = async function (row) {
