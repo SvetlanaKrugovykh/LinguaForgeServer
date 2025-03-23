@@ -33,12 +33,6 @@ module.exports.saveUserSet = async function (body) {
   }
 }
 
-module.exports.addNewTest = async function (entry) {
-  const { topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation } = entry
-
-  await pool.query('INSERT INTO pl_tasks (topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [topic, level, source, year, type, value, total_topic, task_number, tasks_count, text, options, correct, explanation])
-}
-
 module.exports.getSubjects = async function () {
   try {
     const { rows } = await pool.query(`
