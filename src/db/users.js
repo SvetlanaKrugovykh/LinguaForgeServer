@@ -45,15 +45,29 @@ module.exports.createUser = async function (body) {
 module.exports.getUserPermissions = async function (body) {
   try {
     const { user_id } = body
-    const userCheck = await pool.query('SELECT * FROM tg_users WHERE user_id = $1', [user_id])
 
-    if (userCheck.rows.length > 0) {
-      return userCheck.rows[0]
-    } else {
-      return null
+    const { rows } = await pool.query(
+      `SELECT * 
+       FROM subscriptions 
+       WHERE user_id = $1 
+       ORDER BY end_date DESC 
+       LIMIT 1`,
+      [user_id]
+    )
+
+    if (rows.length === 0) {
+      return false
     }
+
+    const subscription = rows[0]
+    const endDate = new Date(subscription.end_date)
+    if (!endDate) return false
+
+    endDate.setHours(23, 59, 59, 999)
+    return endDate >= new Date()
+
   } catch (error) {
     console.error('Error getting user permissions:', error)
-    return null
+    return false
   }
 }

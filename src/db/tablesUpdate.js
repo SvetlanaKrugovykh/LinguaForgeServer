@@ -133,6 +133,28 @@ const tableQueries = {
       date DATE NOT NULL, 
       UNIQUE (currency, date)
   )`,
+  'payments': `
+  CREATE TABLE IF NOT EXISTS payments(
+    id SERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL, 
+    payment_id BIGINT NOT NULL UNIQUE, 
+    action VARCHAR(50),
+    status VARCHAR(50) NOT NULL,
+    type VARCHAR(50),
+    order_id VARCHAR(255),
+    liqpay_order_id VARCHAR(255),
+    description TEXT,
+    amount NUMERIC(10, 2) NOT NULL, 
+    currency VARCHAR(3) NOT NULL,
+    commission_credit NUMERIC(10, 2), 
+    amount_paid_pln NUMERIC(10, 2),
+    create_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP,
+    transaction_id BIGINT,
+    tid VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY(user_id) REFERENCES tg_users(user_id)
+)`,
 }
 
 
@@ -148,6 +170,7 @@ module.exports.updateTables = function () {
     .then(() => checkAndCreateTable('pl_w_results'))
     .then(() => checkAndCreateTable('subscriptions'))
     .then(() => checkAndCreateTable('currency_rates'))
+    .then(() => checkAndCreateTable('payments'))
     .then(() => {
       console.log('All tables created or already exist.')
       if (process.env.LOAD_BASE_DICT === 'true') {

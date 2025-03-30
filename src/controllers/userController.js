@@ -9,8 +9,6 @@ module.exports.getUserPermissions = async function (request, reply) {
   }
 
   const result = await db.getUserPermissions(body)
-  if (!result || result.length === 0) return null
-
   return result
 }
 
