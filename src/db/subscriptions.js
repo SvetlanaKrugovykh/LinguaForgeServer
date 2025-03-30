@@ -62,21 +62,21 @@ module.exports.getSubscription = async function (userId) {
 }
 
 
-module.exports.setExchangeRate = async function (currency, rateToPln) {
+module.exports.setExchangeRate = async function (request, reply) {
   try {
-    const { rowCount } = await pool.query(
-      'INSERT INTO currency_rates (currency, rate_to_pln, date) VALUES ($1, $2, CURRENT_DATE) ON CONFLICT (currency, date) DO UPDATE SET rate_to_pln = EXCLUDED.rate_to_pln',
-      [currency, rateToPln]
+    const { currency, rate_to_pln, date } = request.body;
+
+    await pool.query(
+      `INSERT INTO currency_rates (currency, rate_to_pln, date)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (currency, date) DO UPDATE SET rate_to_pln = $2`,
+      [currency, rate_to_pln, date]
     )
 
-    if (rowCount === 0) {
-      throw new Error('Failed to set exchange rate.')
-    }
-
-    return { success: true, message: 'Exchange rate set successfully.' }
+    reply.status(201).send({ message: 'Exchange rate set successfully.' })
   } catch (error) {
     console.error('Error setting exchange rate:', error)
-    return { success: false, message: error.message }
+    reply.status(500).send({ error: 'Internal server error', message: error.message })
   }
 }
 

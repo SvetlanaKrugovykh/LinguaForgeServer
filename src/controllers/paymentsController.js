@@ -13,8 +13,7 @@ module.exports.getExchRate = async function (request, reply) {
 
 module.exports.setExchRate = async function (request, reply) {
   try {
-    const body = request.body
-    const dataArray = await subscriptions.setExchangeRate(body)
+    const dataArray = await subscriptions.setExchangeRate(request, reply)
 
     return reply.send(dataArray)
   } catch (error) {

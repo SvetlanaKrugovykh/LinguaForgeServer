@@ -1,7 +1,7 @@
-module.exports.coToJestSchema = {
-  description: 'Get Definition',
-  tags: ['Definition'],
-  summary: 'Get definition of a word',
+module.exports = {
+  description: 'Exchange Rate Operations',
+  tags: ['Exchange Rate'],
+  summary: 'Get or Set exchange rates',
   headers: {
     type: 'object',
     properties: {
@@ -12,18 +12,20 @@ module.exports.coToJestSchema = {
   body: {
     type: 'object',
     properties: {
-      text: { type: 'string' },
+      currency: { type: 'string', description: 'Currency code (e.g., UAH, USD)' },
+      rate_to_pln: { type: 'number', description: 'Exchange rate to PLN' },
+      date: { type: 'string', format: 'date', description: 'Date for the exchange rate (YYYY-MM-DD)' },
     },
-    required: ['text'],
+    required: ['currency', 'rate_to_pln', 'date'],
   },
   response: {
     201: {
       description: 'Successful response',
       type: 'object',
       properties: {
-        definition: { type: 'string' },
+        message: { type: 'string' },
       },
-      required: ['definition'],
+      required: ['message'],
     },
     500: {
       description: 'Internal server error',
