@@ -80,20 +80,26 @@ module.exports.setExchangeRate = async function (request, reply) {
   }
 }
 
-module.exports.getExchangeRate = async function (currency) {
+module.exports.getExchangeRate = async (request, reply) => {
   try {
+    const { currency, date } = request.body
+
     const { rows } = await pool.query(
-      'SELECT rate_to_pln FROM currency_rates WHERE currency = $1 AND date = CURRENT_DATE',
-      [currency]
+      `SELECT rate_to_pln 
+       FROM currency_rates 
+       WHERE currency = $1 AND date <= $2 
+       ORDER BY date DESC 
+       LIMIT 1`,
+      [currency, date]
     )
 
     if (rows.length === 0) {
-      throw new Error(`No exchange rate found for currency ${currency} on the current date.`)
+      return reply.status(404).send({ message: 'Exchange rate not found for the specified date or earlier.' })
     }
 
-    return { success: true, rateToPln: rows[0].rate_to_pln }
+    reply.status(200).send({ rate_to_pln: rows[0].rate_to_pln })
   } catch (error) {
     console.error('Error getting exchange rate:', error)
-    return { success: false, message: error.message }
+    reply.status(500).send({ error: 'Internal server error', message: error.message })
   }
 }

@@ -3,7 +3,7 @@ const subscriptions = require('../db/subscriptions')
 module.exports.getExchRate = async function (request, reply) {
   try {
     const body = request.body
-    const dataArray = await subscriptions.getExchangeRate(body)
+    const dataArray = await subscriptions.getExchangeRate(request, reply)
 
     return reply.send(dataArray)
   } catch (error) {
