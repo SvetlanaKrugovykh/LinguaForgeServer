@@ -152,6 +152,7 @@ const tableQueries = {
     end_date TIMESTAMP,
     transaction_id BIGINT,
     tid VARCHAR(255),
+    is_used BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES tg_users(user_id)
 )`,

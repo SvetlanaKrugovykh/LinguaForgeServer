@@ -108,7 +108,7 @@ module.exports.addSubscription = async function (paymentData) {
     const rateToPln = await module.exports.fetchExchangeRate(currency_, new Date().toISOString().split('T')[0])
     if (!rateToPln) throw new Error(`No exchange rate found for currency ${currency_} on the current date.`)
 
-    const amountPaidPln = (amount - commission_credit) * rateToPln //TODO
+    const amountPaidPln = (amount - commission_credit) * rateToPln
 
     await insertPayment({
       user_id,
@@ -125,16 +125,36 @@ module.exports.addSubscription = async function (paymentData) {
       tid
     })
 
+    const { rows: unusedPayments } = await pool.query(
+      `SELECT 
+      COALESCE(SUM(amount_paid_pln), 0) AS total_unused,
+      COALESCE(SUM(commission_credit), 0) AS total_commission
+   FROM payments
+   WHERE user_id = $1 AND is_used = FALSE`,
+      [user_id]
+    )
 
-    if (amountPaidPln < 15) throw new Error('Insufficient payment amount for any subscription.')
+    const totalUnusedPln = unusedPayments[0].total_unused
+    const totalCommission = unusedPayments[0].total_commission
+    const totalAmountPln = ((totalUnusedPln - totalCommission) * rateToPln) + amountPaidPln
 
-    const subscriptionEndDate = calculateSubscriptionEndDate(amountPaidPln)
+    if (totalAmountPln < 15) {
+      throw new Error('Insufficient payment amount for any subscription.')
+    }
+
+    const subscriptionEndDate = calculateSubscriptionEndDate(totalAmountPln)
     const startDate = new Date()
 
     await pool.query(
       `INSERT INTO subscriptions (user_id, start_date, end_date, amount_paid, currency, amount_paid_pln)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [user_id, startDate, subscriptionEndDate, amount, currency_, amountPaidPln]
+      [user_id, startDate, subscriptionEndDate, totalAmountPln, currency_, totalAmountPln]
+    )
+
+    await pool.query(
+      `UPDATE payments SET is_used = TRUE
+       WHERE user_id = $1 AND is_used = FALSE`,
+      [user_id]
     )
 
     return { success: true, message: 'Subscription and payment added successfully.' }

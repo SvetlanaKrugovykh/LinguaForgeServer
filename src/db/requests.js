@@ -339,7 +339,7 @@ module.exports.setUserOpusData = async function (data) {
 
 module.exports.setUserWord = async function (data) {
   try {
-    const { currentOpus, userId } = data
+    const { currentOpus, userId, success } = data
     const wordId = currentOpus.id
 
     const { rows } = await pool.query('SELECT * FROM pl_w_results WHERE user_id = $1 AND word_id = $2', [userId, wordId])
