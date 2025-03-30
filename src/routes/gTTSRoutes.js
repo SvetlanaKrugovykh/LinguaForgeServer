@@ -1,7 +1,9 @@
 const gTTSController = require('../controllers/gTTSController')
+const userController = require('../controllers/userController')
 const isAuthorizedGuard = require('../guards/isAuthorizedGuard')
 const dataTTSSchema = require('../schemas/dataTTSSchema')
 const coToJestSchema = require('../schemas/coToJestSchema')
+const getPaySchema = require('../schemas/getPaySchema')
 const exchangeSchema = require('../schemas/exchangeSchema')
 const addNewTestOpusSchema = require('../schemas/addNewTestOpusSchema')
 const userSetSchema = require('../schemas/userSetSchema')
@@ -39,6 +41,26 @@ module.exports = (fastify, _opts, done) => {
       isAuthorizedGuard
     ],
     schema: exchangeSchema
+  })
+
+  fastify.route({
+    method: 'POST',
+    url: '/get-pay',
+    handler: pay.getPay,
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: getPaySchema
+  })
+
+  fastify.route({
+    method: 'POST',
+    url: '/get-user-permissions',
+    handler: userController.getUserPermissions,
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: userSetSchema
   })
 
   fastify.route({

@@ -103,3 +103,17 @@ module.exports.getExchangeRate = async (request, reply) => {
     reply.status(500).send({ error: 'Internal server error', message: error.message })
   }
 }
+
+module.exports.getPay_ = async function (request, reply) {
+  try {
+    const { userId } = request.body
+
+
+
+
+    reply.status(200).send(rows[0])
+  } catch (error) {
+    console.error('Error getting payment:', error)
+    reply.status(500).send({ error: 'Internal server error', message: error.message })
+  }
+}
