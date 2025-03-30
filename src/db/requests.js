@@ -1,15 +1,8 @@
-const { Pool } = require('pg')
+const pool = require('./pool')
 const dotenv = require('dotenv')
 const g_translateText = require('../services/translateService').g_translateText
 
 dotenv.config()
-const pool = new Pool({
-  user: process.env.LANG_DB_USER,
-  host: process.env.LANG_DB_HOST,
-  database: process.env.LANG_DB_NAME,
-  password: process.env.LANG_DB_PASSWORD,
-  port: process.env.LANG_DB_PORT,
-})
 
 module.exports.saveUserSet = async function (body) {
   try {
@@ -393,3 +386,5 @@ module.exports.cleanWord = async function (i, translations) {
     return null
   }
 }
+
+module.exports.pool = pool

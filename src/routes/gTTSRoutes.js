@@ -2,10 +2,12 @@ const gTTSController = require('../controllers/gTTSController')
 const isAuthorizedGuard = require('../guards/isAuthorizedGuard')
 const dataTTSSchema = require('../schemas/dataTTSSchema')
 const coToJestSchema = require('../schemas/coToJestSchema')
+const exchangeSchema = require('../schemas/exchangeSchema')
 const addNewTestOpusSchema = require('../schemas/addNewTestOpusSchema')
 const userSetSchema = require('../schemas/userSetSchema')
 const userDataMemorizeSchema = require('../schemas/userDataMemorizeSchema')
 const getTestOpusSchema = require('../schemas/getTestOpusSchema')
+const pay = require('../controllers/paymentsController')
 
 module.exports = (fastify, _opts, done) => {
 
@@ -17,6 +19,26 @@ module.exports = (fastify, _opts, done) => {
       isAuthorizedGuard
     ],
     schema: dataTTSSchema
+  })
+
+  fastify.route({
+    method: 'POST',
+    url: '/get-exchange-rate',
+    handler: pay.getExchRate,
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: exchangeSchema
+  })
+
+  fastify.route({
+    method: 'POST',
+    url: '/set-exchange-rate',
+    handler: pay.setExchRate,
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: exchangeSchema
   })
 
   fastify.route({

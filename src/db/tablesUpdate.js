@@ -1,4 +1,4 @@
-const { Pool } = require('pg')
+const pool = require('./pool')
 const dotenv = require('dotenv')
 const fs = require('fs')
 const path = require('path')
@@ -6,14 +6,6 @@ const db = require('./requests')
 const { addNewOpus } = require('../services/opusService')
 
 dotenv.config()
-
-const pool = new Pool({
-  user: process.env.LANG_DB_USER,
-  host: process.env.LANG_DB_HOST,
-  database: process.env.LANG_DB_NAME,
-  password: process.env.LANG_DB_PASSWORD,
-  port: process.env.LANG_DB_PORT,
-})
 
 const tableQueries = {
   'tg_users': `
@@ -121,6 +113,26 @@ const tableQueries = {
       FOREIGN KEY (word_id) REFERENCES pl_words(id),
       FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
     )`,
+  'subscriptions': `
+    CREATE TABLE IF NOT EXISTS subscriptions(
+      id SERIAL PRIMARY KEY,
+      user_id BIGINT NOT NULL, 
+      start_date TIMESTAMP NOT NULL, 
+      end_date TIMESTAMP NOT NULL, 
+      amount_paid NUMERIC(10, 2) NOT NULL, 
+      currency VARCHAR(3) NOT NULL,
+      amount_paid_pln NUMERIC(10, 2) NOT NULL, 
+      created_at TIMESTAMP DEFAULT NOW(),
+      FOREIGN KEY(user_id) REFERENCES tg_users(user_id)
+  )`,
+  'currency_rates': `
+    CREATE TABLE IF NOT EXISTS currency_rates(
+      id SERIAL PRIMARY KEY,
+      currency VARCHAR(3) NOT NULL, 
+      rate_to_pln NUMERIC(10, 4) NOT NULL,
+      date DATE NOT NULL, 
+      UNIQUE (currency, date)
+  )`,
 }
 
 
@@ -134,6 +146,8 @@ module.exports.updateTables = function () {
     .then(() => checkAndCreateTable('pl_t_results'))
     .then(() => checkAndCreateTable('pl_o_results'))
     .then(() => checkAndCreateTable('pl_w_results'))
+    .then(() => checkAndCreateTable('subscriptions'))
+    .then(() => checkAndCreateTable('currency_rates'))
     .then(() => {
       console.log('All tables created or already exist.')
       if (process.env.LOAD_BASE_DICT === 'true') {
