@@ -97,6 +97,8 @@ module.exports.addSubscription = async function (paymentData) {
       tid
     } = paymentData
 
+    console.log('Payment Data:', paymentData)
+
     if (status !== 'success') {
       throw new Error('Payment status is not successful.')
     }
