@@ -1,4 +1,5 @@
 const pool = require('./pool')
+const users = require('./users')
 
 function calculateSubscriptionEndDate(amountPaidPln) {
   const startDate = new Date()
@@ -58,6 +59,25 @@ async function insertPayment({
   tid
 }) {
   try {
+    const userCheck = await pool.query('SELECT * FROM tg_users WHERE user_id = $1', [user_id])
+    if (userCheck.rows.length === 0) {
+      const userDetails = {
+        user_id,
+        first_name: 'Unknown',
+        last_name: 'Unknown',
+        username: 'Unknown',
+        language_code: 'pl'
+      }
+      console.log(`User with ID ${user_id} not found. Creating user...`)
+      await users.createUser(userDetails)
+    }
+
+    const paymentCheck = await pool.query('SELECT * FROM payments WHERE payment_id = $1', [payment_id])
+    if (paymentCheck.rows.length > 0) {
+      console.log(`Payment with ID ${payment_id} already exists. Skipping insertion.`)
+      return
+    }
+
     await pool.query(
       `INSERT INTO payments (user_id, payment_id, status, amount, currency, commission_credit, amount_paid_pln, description, create_date, end_date, transaction_id, tid)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
@@ -76,6 +96,8 @@ async function insertPayment({
         tid
       ]
     )
+
+    console.log(`Payment with ID ${payment_id} inserted successfully.`)
   } catch (error) {
     console.error('Error inserting payment:', error)
     throw error
