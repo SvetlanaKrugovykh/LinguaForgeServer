@@ -163,7 +163,8 @@ module.exports.addSubscription = async function (paymentData) {
     const totalAmountPln = ((totalUnusedPln - totalCommission) * rateToPln) + amountPaidPln
 
     if (totalAmountPln < 15) {
-      throw new Error('Insufficient payment amount for any subscription.')
+      console.warn(`Insufficient payment amount for any subscription. Total amount: ${totalAmountPln}`)
+      return { success: false, message: 'Insufficient payment amount for any subscription.' }
     }
 
     const subscriptionEndDate = calculateSubscriptionEndDate(totalAmountPln)
