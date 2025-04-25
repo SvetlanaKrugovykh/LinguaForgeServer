@@ -1,4 +1,5 @@
 require('dotenv').config()
+require('./src/services/cronJobs')
 const { app } = require('./index')
 const fs = require('fs')
 const path = require('path')
