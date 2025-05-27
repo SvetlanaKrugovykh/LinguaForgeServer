@@ -43,7 +43,11 @@ module.exports.mergeMP3Files = async function (userId, fileNamesArray, addSilenc
         console.warn(`File not found: ${file}`)
       }
     }
-    writeStream.end()
+    await new Promise((resolve, reject) => {
+      writeStream.end()
+      writeStream.on('finish', resolve)
+      writeStream.on('error', reject)
+    })
     console.log(`File created: ${OUTPUT_FILE}`)
 
     const uniqueFiles = [...new Set(files)]
@@ -51,7 +55,8 @@ module.exports.mergeMP3Files = async function (userId, fileNamesArray, addSilenc
       if (
         fs.existsSync(file) &&
         path.dirname(file) === path.resolve(TEMP_CATALOG) &&
-        !path.basename(file).startsWith("silence")
+        !path.basename(file).startsWith("silence") &&
+        file !== OUTPUT_FILE
       ) {
         fs.unlinkSync(file)
       }

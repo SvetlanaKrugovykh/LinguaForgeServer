@@ -4,6 +4,8 @@ const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
 
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 module.exports.gTTs = async (queries) => {
   const results = []
   const gURL = process.env.GOOGLE_TTS_URL
@@ -11,6 +13,21 @@ module.exports.gTTs = async (queries) => {
 
   if (!fs.existsSync(TEMP_CATALOG)) {
     fs.mkdirSync(TEMP_CATALOG)
+    await sleep(200)
+  }
+
+  if (queries.length && queries[0].text && queries[0].text.length > 0) {
+    try {
+      const warmupUrl = googleTTS.getAudioUrl('test', {
+        lang: queries[0].lang || 'en',
+        slow: false,
+        host: gURL,
+      })
+      await axios.get(warmupUrl)
+      await sleep(200)
+    } catch (e) {
+      console.warn('Google TTS warmup failed:', e.message)
+    }
   }
 
   for (const query of queries) {
@@ -42,6 +59,8 @@ module.exports.gTTs = async (queries) => {
           writer.on('error', reject)
         })
 
+        await sleep(50)
+
         if (fs.existsSync(filePath)) {
           const stats = fs.statSync(filePath)
           if (stats.size > 100) {
@@ -57,6 +76,7 @@ module.exports.gTTs = async (queries) => {
       } catch (error) {
         lastError = error
         console.warn(`Attempt ${attempt} failed for text: "${text}"`, error.message)
+        await sleep(100)
       }
     }
 
