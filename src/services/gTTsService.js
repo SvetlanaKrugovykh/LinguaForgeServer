@@ -15,33 +15,56 @@ module.exports.gTTs = async (queries) => {
 
   for (const query of queries) {
     const { userId, text, lang } = query
-    try {
-      const url = googleTTS.getAudioUrl(text, {
-        lang: lang,
-        slow: false,
-        host: gURL,
-      })
+    let filePath = ''
+    let success = false
+    let lastError = null
 
-      const response = await axios({
-        url,
-        method: 'GET',
-        responseType: 'stream'
-      })
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const url = googleTTS.getAudioUrl(text, {
+          lang: lang,
+          slow: false,
+          host: gURL,
+        })
 
-      const filePath = path.join(TEMP_CATALOG, `${userId}_${Date.now()}_${lang}.mp3`)
-      const writer = fs.createWriteStream(filePath)
+        const response = await axios({
+          url,
+          method: 'GET',
+          responseType: 'stream'
+        })
 
-      response.data.pipe(writer)
+        filePath = path.join(TEMP_CATALOG, `${userId}_${Date.now()}_${lang}.mp3`)
+        const writer = fs.createWriteStream(filePath)
+        response.data.pipe(writer)
 
-      await new Promise((resolve, reject) => {
-        writer.on('finish', resolve)
-        writer.on('error', reject)
-      })
+        await new Promise((resolve, reject) => {
+          writer.on('finish', resolve)
+          writer.on('error', reject)
+        })
 
+        if (fs.existsSync(filePath)) {
+          const stats = fs.statSync(filePath)
+          if (stats.size > 100) {
+            success = true
+            break
+          } else {
+            fs.unlinkSync(filePath)
+            console.warn(`Attempt ${attempt}: File too small for text: "${text}"`)
+          }
+        } else {
+          console.warn(`Attempt ${attempt}: File not created for text: "${text}"`)
+        }
+      } catch (error) {
+        lastError = error
+        console.warn(`Attempt ${attempt} failed for text: "${text}"`, error.message)
+      }
+    }
+
+    if (success) {
       results.push({ text, lang, filePath })
-    } catch (error) {
-      console.error(`Error generating TTS for text: ${text}`, error)
-      results.push({ text, lang, error: error.message })
+    } else {
+      results.push({ text, lang, error: lastError ? lastError.message : 'Failed to generate file' })
+      console.error(`Failed to generate TTS for text: "${text}" after 3 attempts`)
     }
   }
 

@@ -80,6 +80,10 @@ module.exports.gTTs = async function (request, reply) {
     const outputFile = await mergeMP3Files(query.userId, fileNamesArray, addSilence)
 
     if (outputFile && fs.existsSync(outputFile)) {
+      const stats = fs.statSync(outputFile)
+      if (stats.size < 100) {
+        return reply.status(500).send({ error: 'Generated file is empty or corrupted' })
+      }
       if (query?.isReturnFile === true) {
         const fileBuffer = fs.readFileSync(outputFile)
         if (fileBuffer.length > MAX_FILE_SIZE) {
