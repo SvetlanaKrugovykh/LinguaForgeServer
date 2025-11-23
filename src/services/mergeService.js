@@ -26,7 +26,8 @@ module.exports.mergeMP3Files = async function (userId, fileNamesArray, addSilenc
         }
       }
     } else {
-      files = fileNamesArray.filter(file => file.endsWith(".mp3"))
+        // Fix: filter only string values before using .endsWith to prevent TypeError
+        files = fileNamesArray.filter(file => typeof file === 'string' && file.endsWith(".mp3"))
     }
 
     if (files.length === 0) {
