@@ -99,13 +99,13 @@ module.exports.getWords = async function (text) {
 
   if (!rows || rows.length === 0) {
     likeText = `%, ${text.trim()}%`
-    const result = await pool.query('SELECT * FROM pl_words WHERE word_forms LIKE $1', [likeText])
+    const result = await pool.query('SELECT * FROM pl_words WHERE word_forms ILIKE $1', [likeText])
     rows = result.rows
   }
 
   if (!rows || rows.length === 0) {
     likeText = `%${text.trim()}%`
-    const result = await pool.query('SELECT * FROM pl_words WHERE word_forms LIKE $1', [likeText])
+    const result = await pool.query('SELECT * FROM pl_words WHERE word_forms ILIKE $1', [likeText])
     rows = result.rows
   }
 
