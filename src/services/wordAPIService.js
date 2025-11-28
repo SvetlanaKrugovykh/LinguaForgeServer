@@ -1,16 +1,17 @@
 const axios = require('axios')
-const { google } = require('google-auth-library')
+const { GoogleAuth } = require('google-auth-library')
 const path = require('path')
-
+const { getCredentials } = require('../guards/getCredentials')
 require('dotenv').config()
 
-const SERVICE_ACCOUNT_PATH = process.env.GOOGLE_APPLICATION_CREDENTIALS
+
 const GOOGLE_LANGUAGE_API_SCOPE = process.env.GOOGLE_LANGUAGE_API_SCOPE
 
 // Get Google Cloud access token using service account
 async function getAccessToken() {
-  const auth = new google.auth.GoogleAuth({
-    keyFile: SERVICE_ACCOUNT_PATH,
+  const serviceAccount = getCredentials()
+  const auth = new GoogleAuth({
+    credentials: serviceAccount,
     scopes: [GOOGLE_LANGUAGE_API_SCOPE]
   })
   const client = await auth.getClient()
