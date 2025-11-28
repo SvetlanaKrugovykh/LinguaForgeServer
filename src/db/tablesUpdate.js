@@ -53,6 +53,7 @@ const tableQueries = {
       en TEXT,
       subject INTEGER,
       part_of_speech VARCHAR(50),
+      gender VARCHAR(50),
       frequency INTEGER,
       example INTEGER,
       FOREIGN KEY (example) REFERENCES pl_examples(id),

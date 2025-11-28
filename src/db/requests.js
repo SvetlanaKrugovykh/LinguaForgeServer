@@ -1,6 +1,7 @@
 const pool = require('./pool')
 const dotenv = require('dotenv')
 const g_translateText = require('../services/translateService').g_translateText
+const { analyzeOneWord } = require('../services/wordAPIService')
 
 dotenv.config()
 
@@ -279,7 +280,20 @@ module.exports.updateWord = async function (row) {
 
     const [en, ru, uk] = translations
 
-    await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3 WHERE id = $4', [en, ru, uk, row.id])
+    // Determine part of speech and gender using wordAPIService
+    let part_of_speech = null
+    let gender = null
+    try {
+      const analysis = await analyzeOneWord(row.word, row.lang || 'pl')
+      if (analysis && analysis.tokens && analysis.tokens[0] && analysis.tokens[0].partOfSpeech) {
+        part_of_speech = analysis.tokens[0].partOfSpeech.tag || null
+        gender = analysis.tokens[0].partOfSpeech.gender || null
+      }
+    } catch (err) {
+      console.error('Error analyzing word:', err)
+    }
+
+    await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3, part_of_speech = $4, gender = $5 WHERE id = $6', [en, ru, uk, part_of_speech, gender, row.id])
 
     const result = await pool.query('SELECT * FROM pl_words WHERE id = $1', [row.id])
     if (!result.rows || result.rows.length === 0) {
