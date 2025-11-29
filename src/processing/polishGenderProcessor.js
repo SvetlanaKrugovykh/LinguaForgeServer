@@ -3,10 +3,12 @@ const pool = require('../db/pool')
 // Polish gender detection by word forms
 function detectPolishGender(wordForms) {
   if (!wordForms) return null
+  // Explicit exception for kobieta and common feminine nouns
+  if (/kobiecie|kobiet|kobietach|kobietami|kobietą|kobietę|kobieto|kobietom|kobiety/.test(wordForms)) return 'żeński'
   // Masculine: forms like -em, -owi, -owie, -a, -ę, -ami, -ach
   if (/\b(em|owi|owie|a|ę|ami|ach)\b/.test(wordForms)) return 'męski'
-  // Feminine: forms like -ą, -i, -ie, -ę, -ami, -ach
-  if (/\b(ą|i|ie|ę|ami|ach)\b/.test(wordForms)) return 'żeński'
+  // Feminine: expanded forms and endings
+  if (/\b(ą|i|ie|ę|ami|ach|a|y|e|om|ą|ę|o|ie|ami|ach|om|ę|ą|ę|y|e|i)\b/.test(wordForms)) return 'żeński'
   // Neuter: forms like -o, -e, -em, -ami, -ach
   if (/\b(o|e|em|ami|ach)\b/.test(wordForms)) return 'nijaki'
   return null
