@@ -15,7 +15,10 @@ const tableQueries = {
       first_name VARCHAR(255) NOT NULL,
       last_name VARCHAR(255),
       username VARCHAR(255),
-      language_code VARCHAR(2)
+      language_code VARCHAR(2), -- native language
+      learning_language VARCHAR(2), -- language being learned
+      tts_language VARCHAR(2), -- TTS (voice) language
+      menu_language VARCHAR(2) -- menu/interface language
     )`,
   'tg_msgs': `
     CREATE TABLE tg_msgs (
