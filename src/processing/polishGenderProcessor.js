@@ -13,23 +13,31 @@ function detectPolishGender(wordForms) {
 }
 
 async function processPolishGender() {
-  const { rows } = await pool.query("SELECT id, word, word_forms, gender FROM pl_words")
+  const { rows } = await pool.query("SELECT id, word, word_forms, gender, part_of_speech FROM pl_words")
+  let total = rows.length
+  let updated = 0
+  let skipped = 0
   for (const row of rows) {
     if (!row.gender && row.word_forms) {
-      // If part_of_speech is verb, set gender to '-'
       if (row.part_of_speech && row.part_of_speech.toLowerCase().includes('czasownik')) {
         await pool.query("UPDATE pl_words SET gender = $1 WHERE id = $2", ['-', row.id])
+        updated++
         console.log(`Set gender for verb '${row.word}': -`)
         continue
       }
       const gender = detectPolishGender(row.word_forms)
       if (gender) {
         await pool.query("UPDATE pl_words SET gender = $1 WHERE id = $2", [gender, row.id])
+        updated++
         console.log(`Set gender for '${row.word}': ${gender}`)
+      } else {
+        skipped++
       }
+    } else {
+      skipped++
     }
   }
-  console.log('Polish gender processing complete.')
+  console.log(`Polish gender processing complete. Total: ${total}, Updated: ${updated}, Skipped: ${skipped}`)
 }
 
 if (require.main === module) {
