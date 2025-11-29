@@ -16,6 +16,12 @@ async function processPolishGender() {
   const { rows } = await pool.query("SELECT id, word, word_forms, gender FROM pl_words")
   for (const row of rows) {
     if (!row.gender && row.word_forms) {
+      // If part_of_speech is verb, set gender to '-'
+      if (row.part_of_speech && row.part_of_speech.toLowerCase().includes('czasownik')) {
+        await pool.query("UPDATE pl_words SET gender = $1 WHERE id = $2", ['-', row.id])
+        console.log(`Set gender for verb '${row.word}': -`)
+        continue
+      }
       const gender = detectPolishGender(row.word_forms)
       if (gender) {
         await pool.query("UPDATE pl_words SET gender = $1 WHERE id = $2", [gender, row.id])
