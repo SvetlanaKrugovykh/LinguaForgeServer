@@ -11,7 +11,8 @@ module.exports.checkText = async function (text, userId) {
 
     if (process.env.TRANSLATE_WORDS === 'true') {
       for (const row of dataArray) {
-        if (!row.en || !row.ru || !row.uk || !row.gender) {
+        if (!row.en || !row.ru || !row.uk) {
+          // || !row.gender
           const updatedRows = await db.updateWord(row)
           if (updatedRows) {
             return updatedRows

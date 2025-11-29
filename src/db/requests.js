@@ -284,7 +284,7 @@ module.exports.updateWord = async function (row) {
     let part_of_speech = null
     let gender = null
     try {
-      const analysis = await analyzeOneWord(row.word, row.lang || 'pl')
+      const analysis = await analyzeOneWord(row.word, row.lang || 'en')
       if (analysis && analysis.tokens && analysis.tokens[0] && analysis.tokens[0].partOfSpeech) {
         part_of_speech = analysis.tokens[0].partOfSpeech.tag || null
         gender = analysis.tokens[0].partOfSpeech.gender || null
