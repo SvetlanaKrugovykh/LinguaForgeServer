@@ -288,12 +288,17 @@ module.exports.updateWord = async function (row) {
       if (analysis && analysis.tokens && analysis.tokens[0] && analysis.tokens[0].partOfSpeech) {
         part_of_speech = analysis.tokens[0].partOfSpeech.tag || null
         gender = analysis.tokens[0].partOfSpeech.gender || null
+        console.log('WORD:', row.word, 'POS:', part_of_speech, 'GENDER:', gender)
       }
     } catch (err) {
       console.error('Error analyzing word:', err)
     }
 
-    await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3, part_of_speech = $4, gender = $5 WHERE id = $6', [en, ru, uk, part_of_speech, gender, row.id])
+    if (!gender) {
+      await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3 WHERE id = $4', [en, ru, uk, row.id])
+    } else {
+      await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3, part_of_speech = $4, gender = $5 WHERE id = $6', [en, ru, uk, part_of_speech, gender, row.id])
+    }
 
     const result = await pool.query('SELECT * FROM pl_words WHERE id = $1', [row.id])
     if (!result.rows || result.rows.length === 0) {
