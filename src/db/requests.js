@@ -7,19 +7,99 @@ dotenv.config()
 
 module.exports.saveUserSet = async function (body) {
   try {
-    const { user_id, first_name, last_name, username, language_code } = body
+    const {
+      user_id,
+      first_name,
+      last_name,
+      username,
+      language_code,
+      learning_language,
+      tts_language,
+      menu_language
+    } = body
     const userCheck = await pool.query('SELECT * FROM tg_users WHERE user_id = $1', [user_id])
 
     if (userCheck.rows.length > 0) {
-      await pool.query(
-        'UPDATE tg_users SET first_name = $1, last_name = $2, username = $3, language_code = $4 WHERE user_id = $5',
-        [first_name, last_name, username, language_code, user_id]
-      )
+      // Build dynamic update query for only provided fields
+      const fields = []
+      const values = []
+      let idx = 1
+      if (first_name !== undefined && first_name !== null && first_name !== '') {
+        fields.push(`first_name = $${idx++}`)
+        values.push(first_name)
+      }
+      if (last_name !== undefined && last_name !== null && last_name !== '') {
+        fields.push(`last_name = $${idx++}`)
+        values.push(last_name)
+      }
+      if (username !== undefined && username !== null && username !== '') {
+        fields.push(`username = $${idx++}`)
+        values.push(username)
+      }
+      if (language_code !== undefined && language_code !== null && language_code !== '') {
+        fields.push(`language_code = $${idx++}`)
+        values.push(language_code)
+      }
+      if (learning_language !== undefined && learning_language !== null && learning_language !== '') {
+        fields.push(`learning_language = $${idx++}`)
+        values.push(learning_language)
+      }
+      if (tts_language !== undefined && tts_language !== null && tts_language !== '') {
+        fields.push(`tts_language = $${idx++}`)
+        values.push(tts_language)
+      }
+      if (menu_language !== undefined && menu_language !== null && menu_language !== '') {
+        fields.push(`menu_language = $${idx++}`)
+        values.push(menu_language)
+      }
+      if (fields.length > 0) {
+        values.push(user_id)
+        const query = `UPDATE tg_users SET ${fields.join(', ')} WHERE user_id = $${idx}`
+        await pool.query(query, values)
+      }
     } else {
-      await pool.query(
-        'INSERT INTO tg_users (user_id, first_name, last_name, username, language_code) VALUES ($1, $2, $3, $4, $5)',
-        [user_id, first_name, last_name, username, language_code]
-      )
+      // Only insert fields that are provided
+      const insertFields = ['user_id']
+      const insertValues = [user_id]
+      const placeholders = ['$1']
+      let idx = 2
+      if (first_name !== undefined && first_name !== null && first_name !== '') {
+        insertFields.push('first_name')
+        insertValues.push(first_name)
+        placeholders.push(`$${idx++}`)
+      }
+      if (last_name !== undefined && last_name !== null && last_name !== '') {
+        insertFields.push('last_name')
+        insertValues.push(last_name)
+        placeholders.push(`$${idx++}`)
+      }
+      if (username !== undefined && username !== null && username !== '') {
+        insertFields.push('username')
+        insertValues.push(username)
+        placeholders.push(`$${idx++}`)
+      }
+      if (language_code !== undefined && language_code !== null && language_code !== '') {
+        insertFields.push('language_code')
+        insertValues.push(language_code)
+        placeholders.push(`$${idx++}`)
+      }
+      if (learning_language !== undefined && learning_language !== null && learning_language !== '') {
+        insertFields.push('learning_language')
+        insertValues.push(learning_language)
+        placeholders.push(`$${idx++}`)
+      }
+      if (tts_language !== undefined && tts_language !== null && tts_language !== '') {
+        insertFields.push('tts_language')
+        insertValues.push(tts_language)
+        placeholders.push(`$${idx++}`)
+      }
+      if (menu_language !== undefined && menu_language !== null && menu_language !== '') {
+        insertFields.push('menu_language')
+        insertValues.push(menu_language)
+        placeholders.push(`$${idx++}`)
+      }
+      const query = `INSERT INTO tg_users (${insertFields.join(', ')}) VALUES (${placeholders.join(', ')})`
+      await pool.query(query, insertValues)
     }
   } catch (error) {
     console.error('Error saving user set:', error)
