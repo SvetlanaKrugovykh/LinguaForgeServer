@@ -2,18 +2,19 @@ const db = require('../db/requests')
 require('dotenv').config()
 
 module.exports.checkText = async function (text, userId, lang) {
+  let checkGender = false
   if (text) {
     if (text.startsWith('Subject:')) {
       return checkSubjectWord(text, userId)
     }
 
     const dataArray = await db.getWords(text, lang)
+    if (lang='de') checkGender = true
 
     if (process.env.TRANSLATE_WORDS === 'true') {
       for (const row of dataArray) {
-        if (!row.en || !row.ru || !row.uk) {
-          // || !row.gender
-          const updatedRows = await db.updateWord(row)
+        if (!row.en || !row.ru || !row.uk || (checkGender && !row.gender)) {
+          const updatedRows = await db.updateWord(row, lang, checkGender)
           if (updatedRows) {
             return updatedRows
           }

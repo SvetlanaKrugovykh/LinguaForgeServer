@@ -2,6 +2,7 @@ const pool = require('./pool')
 const dotenv = require('dotenv')
 const g_translateText = require('../services/translateService').g_translateText
 const { analyzeOneWord } = require('../services/wordAPIService')
+const stringSimilarity = require("string-similarity")
 
 dotenv.config()
 
@@ -175,41 +176,38 @@ async function deleteTaskAndRelatedResults(taskId) {
 }
 
 
+const stringSimilarity = require("string-similarity")
+
 module.exports.getWords = async function (text, lang) {
-  const tableName = `${lang}_words`
-  const tableExistsRes = await pool.query(
-    "SELECT to_regclass($1) AS exists",
-    [tableName]
-  )
-  if (!tableExistsRes.rows[0].exists) {
-    return []
-  }
+	const tableName = `${lang}_words`
+	const tableExistsRes = await pool.query("SELECT to_regclass($1) AS exists", [
+		tableName,
+	])
+	if (!tableExistsRes.rows[0].exists) {
+		return []
+	}
 
-  let { rows } = await pool.query(
-    `SELECT * FROM ${tableName} WHERE word = $1`,
-    [text.trim()]
-  )
-  let likeText
+	let { rows } = await pool.query(
+		`SELECT * FROM ${tableName} WHERE word = $1`,
+		[text.trim()]
+	)
 
-  if (!rows || rows.length === 0) {
-    likeText = `%, ${text.trim()}%`
-    const result = await pool.query(
-      `SELECT * FROM ${tableName} WHERE word_forms ILIKE $1`,
-      [likeText]
-    )
-    rows = result.rows
-  }
+	if (!rows || rows.length === 0) {
+		const likeText = `%${text.trim()}%`
+		const result = await pool.query(
+			`SELECT * FROM ${tableName} WHERE word_forms ILIKE $1`,
+			[likeText]
+		)
+		rows = result.rows
+	}
 
-  if (!rows || rows.length === 0) {
-    likeText = `%${text.trim()}%`
-    const result = await pool.query(
-      `SELECT * FROM ${tableName} WHERE word_forms ILIKE $1`,
-      [likeText]
-    )
-    rows = result.rows
-  }
+	if (rows && rows.length > 1) {
+		const matches = rows.map((row) => row.word)
+		const bestMatch = stringSimilarity.findBestMatch(text.trim(), matches)
+		return rows.filter((row) => row.word === bestMatch.bestMatch.target)
+	}
 
-  return rows
+	return rows
 }
 
 module.exports.getTasks = async function (topic, level, _source, userId, taskId) {
@@ -369,12 +367,12 @@ module.exports.manualUpdateWord = async function (data) {
   }
 }
 
-module.exports.updateWord = async function (row) {
+module.exports.updateWord = async function (row, lang, checkGender) {
   try {
     const translations = await Promise.all([
-      row.en ? row.en : await g_translateText(row.word, 'pl', 'en'),
-      row.ru ? row.ru : await g_translateText(row.word, 'pl', 'ru'),
-      row.uk ? row.uk : await g_translateText(row.word, 'pl', 'uk')
+      row.en ? row.en : await g_translateText(row.word, lang, 'en'),
+      row.ru ? row.ru : await g_translateText(row.word, lang, 'ru'),
+      row.uk ? row.uk : await g_translateText(row.word, lang, 'uk')
     ])
 
     const [en, ru, uk] = translations
@@ -383,12 +381,27 @@ module.exports.updateWord = async function (row) {
     let part_of_speech = null
     let gender = null
     try {
-      const analysis = await analyzeOneWord(row.word, row.lang || 'en')
-      if (analysis && analysis.tokens && analysis.tokens[0] && analysis.tokens[0].partOfSpeech) {
-        part_of_speech = analysis.tokens[0].partOfSpeech.tag || null
-        gender = analysis.tokens[0].partOfSpeech.gender || null
-        console.log('WORD:', row.word, 'POS:', part_of_speech, 'GENDER:', gender)
-      }
+      if (checkGender) {
+        console.log('Checking gender for word:', row.word)
+      const analysis = await analyzeOneWord(row.word, lang)
+			if (
+				analysis &&
+				analysis.tokens &&
+				analysis.tokens[0] &&
+				analysis.tokens[0].partOfSpeech
+			) {
+				part_of_speech = analysis.tokens[0].partOfSpeech.tag || null
+				gender = analysis.tokens[0].partOfSpeech.gender || null
+				console.log(
+					"WORD:",
+					row.word,
+					"POS:",
+					part_of_speech,
+					"GENDER:",
+					gender
+				)
+			}
+     }
     } catch (err) {
       console.error('Error analyzing word:', err)
     }
