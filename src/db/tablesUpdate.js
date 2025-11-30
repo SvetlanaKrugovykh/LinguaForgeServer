@@ -117,6 +117,23 @@ const tableQueries = {
       FOREIGN KEY (word_id) REFERENCES pl_words(id),
       FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
     )`,
+  'de_words': `
+    CREATE TABLE de_words (
+      id SERIAL PRIMARY KEY,
+      word TEXT NOT NULL UNIQUE,
+      word_forms TEXT,
+      phrase TEXT,
+      ru TEXT,
+      uk TEXT,
+      en TEXT,
+      subject INTEGER,
+      part_of_speech VARCHAR(50),
+      gender VARCHAR(50),
+      frequency INTEGER,
+      example INTEGER,
+      FOREIGN KEY (example) REFERENCES pl_examples(id),
+      FOREIGN KEY (subject) REFERENCES pl_subjects(id)
+    )`,
   'subscriptions': `
     CREATE TABLE IF NOT EXISTS subscriptions(
       id SERIAL PRIMARY KEY,
@@ -169,6 +186,7 @@ module.exports.updateTables = function () {
     .then(() => checkAndCreateTable('pl_subjects'))
     .then(() => checkAndCreateTable('pl_examples'))
     .then(() => checkAndCreateTable('pl_words'))
+    .then(() => checkAndCreateTable('de_words'))
     .then(() => checkAndCreateTable('pl_tasks'))
     .then(() => checkAndCreateTable('pl_t_results'))
     .then(() => checkAndCreateTable('pl_o_results'))
