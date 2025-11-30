@@ -174,19 +174,38 @@ async function deleteTaskAndRelatedResults(taskId) {
   }
 }
 
-module.exports.getWords = async function (text) {
-  let { rows } = await pool.query('SELECT * FROM pl_words WHERE word = $1', [text.trim()])
+
+module.exports.getWords = async function (text, lang) {
+  const tableName = `${lang}_words`
+  const tableExistsRes = await pool.query(
+    "SELECT to_regclass($1) AS exists",
+    [tableName]
+  )
+  if (!tableExistsRes.rows[0].exists) {
+    return []
+  }
+
+  let { rows } = await pool.query(
+    `SELECT * FROM ${tableName} WHERE word = $1`,
+    [text.trim()]
+  )
   let likeText
 
   if (!rows || rows.length === 0) {
     likeText = `%, ${text.trim()}%`
-    const result = await pool.query('SELECT * FROM pl_words WHERE word_forms ILIKE $1', [likeText])
+    const result = await pool.query(
+      `SELECT * FROM ${tableName} WHERE word_forms ILIKE $1`,
+      [likeText]
+    )
     rows = result.rows
   }
 
   if (!rows || rows.length === 0) {
     likeText = `%${text.trim()}%`
-    const result = await pool.query('SELECT * FROM pl_words WHERE word_forms ILIKE $1', [likeText])
+    const result = await pool.query(
+      `SELECT * FROM ${tableName} WHERE word_forms ILIKE $1`,
+      [likeText]
+    )
     rows = result.rows
   }
 

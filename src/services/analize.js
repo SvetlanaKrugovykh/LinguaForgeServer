@@ -1,13 +1,13 @@
 const db = require('../db/requests')
 require('dotenv').config()
 
-module.exports.checkText = async function (text, userId) {
+module.exports.checkText = async function (text, userId, lang) {
   if (text) {
     if (text.startsWith('Subject:')) {
       return checkSubjectWord(text, userId)
     }
 
-    const dataArray = await db.getWords(text)
+    const dataArray = await db.getWords(text, lang)
 
     if (process.env.TRANSLATE_WORDS === 'true') {
       for (const row of dataArray) {
