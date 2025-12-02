@@ -23,6 +23,16 @@ module.exports.userSettingsSave = async function (request, reply) {
   }
 }
 
+module.exports.userSettingsGet = async function (request, reply) {
+  try {
+    const body = request.body
+    const dataArray = await usersService.getUserSet(body)
+    return reply.send(dataArray)
+  } catch (error) {
+    reply.status(500).send({ error: 'Error processing request', details: error.message })
+  }
+}
+
 module.exports.addNewTest = async function (request, reply) {
   try {
     const body = request.body

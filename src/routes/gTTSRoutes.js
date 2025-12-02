@@ -7,6 +7,7 @@ const getPaySchema = require('../schemas/getPaySchema')
 const exchangeSchema = require('../schemas/exchangeSchema')
 const addNewTestOpusSchema = require('../schemas/addNewTestOpusSchema')
 const userSetSchema = require('../schemas/userSetSchema')
+const userGetSchema = require('../schemas/userGetSchema')
 const userDataMemorizeSchema = require('../schemas/userDataMemorizeSchema')
 const getTestOpusSchema = require('../schemas/getTestOpusSchema')
 const pay = require('../controllers/paymentsController')
@@ -121,6 +122,16 @@ module.exports = (fastify, _opts, done) => {
       isAuthorizedGuard
     ],
     schema: userSetSchema
+  })
+
+  fastify.route({
+    method: 'POST',
+    url: '/user-get',
+    handler: gTTSController.userSettingsGet,
+    preHandler: [
+      isAuthorizedGuard
+    ],
+    schema: userGetSchema
   })
 
   fastify.route({

@@ -2,9 +2,20 @@ const pool = require('./pool')
 const dotenv = require('dotenv')
 const g_translateText = require('../services/translateService').g_translateText
 const { analyzeOneWord } = require('../services/wordAPIService')
-const stringSimilarity = require("string-similarity")
+const stringSimilarity = require('string-similarity')
 
 dotenv.config()
+
+module.exports.getUserSet = async function (body) {
+  try {
+    const { chat_id } = body
+    const { rows } = await pool.query('SELECT * FROM tg_users WHERE user_id = $1', [chat_id])
+    return rows
+  } catch (error) {
+    console.error('Error getting user set:', error)
+    return null
+  }
+}
 
 module.exports.saveUserSet = async function (body) {
   try {
@@ -21,7 +32,6 @@ module.exports.saveUserSet = async function (body) {
     const userCheck = await pool.query('SELECT * FROM tg_users WHERE user_id = $1', [user_id])
 
     if (userCheck.rows.length > 0) {
-      // Build dynamic update query for only provided fields
       const fields = []
       const values = []
       let idx = 1
@@ -59,7 +69,6 @@ module.exports.saveUserSet = async function (body) {
         await pool.query(query, values)
       }
     } else {
-      // Only insert fields that are provided
       const insertFields = ['user_id']
       const insertValues = [user_id]
       const placeholders = ['$1']
@@ -174,9 +183,6 @@ async function deleteTaskAndRelatedResults(taskId) {
     console.error('Error deleting task and related results:', error)
   }
 }
-
-
-const stringSimilarity = require("string-similarity")
 
 module.exports.getWords = async function (text, lang) {
 	const tableName = `${lang}_words`
@@ -369,6 +375,7 @@ module.exports.manualUpdateWord = async function (data) {
 
 module.exports.updateWord = async function (row, lang, checkGender) {
   try {
+    const tableName = `${lang}_words`
     const translations = await Promise.all([
       row.en ? row.en : await g_translateText(row.word, lang, 'en'),
       row.ru ? row.ru : await g_translateText(row.word, lang, 'ru'),
@@ -407,12 +414,15 @@ module.exports.updateWord = async function (row, lang, checkGender) {
     }
 
     if (!gender) {
-      await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3 WHERE id = $4', [en, ru, uk, row.id])
+      await pool.query(
+				`UPDATE ${tableName} SET en = $1, ru = $2, uk = $3 WHERE id = $4`,
+				[en, ru, uk, row.id]
+			)
     } else {
-      await pool.query('UPDATE pl_words SET en = $1, ru = $2, uk = $3, part_of_speech = $4, gender = $5 WHERE id = $6', [en, ru, uk, part_of_speech, gender, row.id])
+      await pool.query(`UPDATE ${tableName} SET en = $1, ru = $2, uk = $3, part_of_speech = $4, gender = $5 WHERE id = $6`, [en, ru, uk, part_of_speech, gender, row.id])
     }
 
-    const result = await pool.query('SELECT * FROM pl_words WHERE id = $1', [row.id])
+    const result = await pool.query(`SELECT * FROM ${tableName} WHERE id = $1`, [row.id])
     if (!result.rows || result.rows.length === 0) {
       return null
     }
