@@ -1,7 +1,6 @@
 const fs = require("fs")
 const path = require("path")
 const { Pool } = require("pg")
-const dotenv = require("dotenv")
 require("dotenv").config()
 
 const pool = new Pool({
@@ -12,10 +11,16 @@ const pool = new Pool({
 	port: process.env.LANG_DB_PORT,
 })
 
-const filePath = path.join(
-	process.cwd(),
-	"data/en/Dictionaries/Common-Words.txt"
-)
+const userFileArg = process.argv[2]
+
+if (!userFileArg) {
+	console.error(
+		"❌ Error: you must pass path to the words file.\nUsage: node importWords.js /path/to/file"
+	)
+	process.exit(1)
+}
+
+const filePath = path.resolve(userFileArg)
 
 async function importWords() {
 	const lines = fs
