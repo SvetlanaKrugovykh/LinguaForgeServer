@@ -8,7 +8,7 @@ const { addNewOpus } = require('../services/opusService')
 dotenv.config()
 
 const tableQueries = {
-  'tg_users': `
+	tg_users: `
     CREATE TABLE tg_users (
       id SERIAL PRIMARY KEY,
       user_id BIGINT NOT NULL UNIQUE,
@@ -21,7 +21,7 @@ const tableQueries = {
       tts_language VARCHAR(2), -- TTS (voice) language
       menu_language VARCHAR(2) -- menu/interface language
     )`,
-  'tg_msgs': `
+	tg_msgs: `
     CREATE TABLE tg_msgs (
       id SERIAL PRIMARY KEY,
       user_id BIGINT NOT NULL,
@@ -29,12 +29,12 @@ const tableQueries = {
       msg_text TEXT NOT NULL,
       msg_date TIMESTAMP NOT NULL
     )`,
-  'pl_subjects': `
+	pl_subjects: `
     CREATE TABLE pl_subjects (
       id SERIAL PRIMARY KEY,
       subject TEXT NOT NULL
     )`,
-  'pl_examples': `
+	pl_examples: `
     CREATE TABLE pl_examples (
       id SERIAL PRIMARY KEY,
       description TEXT,
@@ -46,7 +46,7 @@ const tableQueries = {
       size TEXT,
       FOREIGN KEY (subject) REFERENCES pl_subjects(id)
     )`,
-  'pl_words': `
+	pl_words: `
     CREATE TABLE pl_words (
       id SERIAL PRIMARY KEY,
       word TEXT NOT NULL,
@@ -63,7 +63,7 @@ const tableQueries = {
       FOREIGN KEY (example) REFERENCES pl_examples(id),
       FOREIGN KEY (subject) REFERENCES pl_subjects(id)
     )`,
-  'pl_tasks': `
+	pl_tasks: `
     CREATE TABLE pl_tasks (
       id SERIAL PRIMARY KEY,
       topic TEXT NOT NULL,
@@ -80,7 +80,7 @@ const tableQueries = {
       correct TEXT,
       explanation TEXT
     )`,
-  'pl_t_results': `
+	pl_t_results: `
     CREATE TABLE pl_t_results (
       id SERIAL PRIMARY KEY,
       user_id BIGINT NOT NULL,
@@ -94,7 +94,7 @@ const tableQueries = {
       FOREIGN KEY (task_id) REFERENCES pl_tasks(id),
       FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
     )`,
-  'pl_o_results': `
+	pl_o_results: `
     CREATE TABLE pl_o_results (
       id SERIAL PRIMARY KEY,
       user_id BIGINT NOT NULL,
@@ -107,7 +107,7 @@ const tableQueries = {
       FOREIGN KEY (opus_id) REFERENCES pl_examples(id),
       FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
     )`,
-  'pl_w_results': `
+	pl_w_results: `
     CREATE TABLE pl_w_results (
       id SERIAL PRIMARY KEY,
       user_id BIGINT NOT NULL,
@@ -118,7 +118,7 @@ const tableQueries = {
       FOREIGN KEY (word_id) REFERENCES pl_words(id),
       FOREIGN KEY (user_id) REFERENCES tg_users(user_id)
     )`,
-  'de_words': `
+	de_words: `
     CREATE TABLE de_words (
       id SERIAL PRIMARY KEY,
       word TEXT NOT NULL UNIQUE,
@@ -135,7 +135,24 @@ const tableQueries = {
       FOREIGN KEY (example) REFERENCES pl_examples(id),
       FOREIGN KEY (subject) REFERENCES pl_subjects(id)
     )`,
-  'subscriptions': `
+	en_words: `
+    CREATE TABLE en_words (
+      id SERIAL PRIMARY KEY,
+      word TEXT NOT NULL UNIQUE,
+      word_forms TEXT,
+      phrase TEXT,
+      ru TEXT,
+      uk TEXT,
+      en TEXT,
+      subject INTEGER,
+      part_of_speech VARCHAR(50),
+      gender VARCHAR(50),
+      frequency INTEGER,
+      example INTEGER,
+      FOREIGN KEY (example) REFERENCES pl_examples(id),
+      FOREIGN KEY (subject) REFERENCES pl_subjects(id)
+    )`,
+	subscriptions: `
     CREATE TABLE IF NOT EXISTS subscriptions(
       id SERIAL PRIMARY KEY,
       user_id BIGINT NOT NULL, 
@@ -147,7 +164,7 @@ const tableQueries = {
       created_at TIMESTAMP DEFAULT NOW(),
       FOREIGN KEY(user_id) REFERENCES tg_users(user_id)
   )`,
-  'currency_rates': `
+	currency_rates: `
     CREATE TABLE IF NOT EXISTS currency_rates(
       id SERIAL PRIMARY KEY,
       currency VARCHAR(3) NOT NULL, 
@@ -155,7 +172,7 @@ const tableQueries = {
       date DATE NOT NULL, 
       UNIQUE (currency, date)
   )`,
-  'payments': `
+	payments: `
   CREATE TABLE IF NOT EXISTS payments(
     id SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL, 
@@ -188,6 +205,7 @@ module.exports.updateTables = function () {
     .then(() => checkAndCreateTable('pl_examples'))
     .then(() => checkAndCreateTable('pl_words'))
     .then(() => checkAndCreateTable('de_words'))
+    .then(() => checkAndCreateTable('en_words'))
     .then(() => checkAndCreateTable('pl_tasks'))
     .then(() => checkAndCreateTable('pl_t_results'))
     .then(() => checkAndCreateTable('pl_o_results'))
