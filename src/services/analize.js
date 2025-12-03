@@ -9,7 +9,7 @@ module.exports.checkText = async function (text, userId, lang) {
     }
 
     const dataArray = await db.getWords(text, lang)
-    if (lang='de') checkGender = true
+    if (lang === 'de') checkGender = true
 
     if (process.env.TRANSLATE_WORDS === 'true') {
       for (const row of dataArray) {
