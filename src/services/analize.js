@@ -13,7 +13,7 @@ module.exports.checkText = async function (text, userId, lang) {
 
     if (process.env.TRANSLATE_WORDS === 'true') {
       for (const row of dataArray) {
-        if (!row.en || !row.ru || !row.uk || (checkGender && !row.gender)) {
+        if (!row.ru || (checkGender && !row.gender)) {
           const updatedRows = await db.updateWord(row, lang, checkGender)
           if (updatedRows) {
             return updatedRows

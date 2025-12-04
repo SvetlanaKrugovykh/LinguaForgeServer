@@ -377,10 +377,22 @@ module.exports.updateWord = async function (row, lang, checkGender) {
   try {
     const tableName = `${lang}_words`
     const translations = await Promise.all([
-      row.en ? row.en : await g_translateText(row.word, lang, 'en'),
-      row.ru ? row.ru : await g_translateText(row.word, lang, 'ru'),
-      row.uk ? row.uk : await g_translateText(row.word, lang, 'uk')
-    ])
+      lang !== "en"
+        ? row.en
+          ? row.en
+          : await g_translateText(row.word, lang, "en")
+        : row.en,
+      lang !== "ru"
+        ? row.ru
+          ? row.ru
+          : await g_translateText(row.word, lang, "ru")
+        : row.ru,
+      lang !== "uk"
+        ? row.uk
+          ? row.uk
+          : await g_translateText(row.word, lang, "uk")
+        : row.uk,
+    ])    
 
     const [en, ru, uk] = translations
 
